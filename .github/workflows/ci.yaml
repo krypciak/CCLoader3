@@ -1,5 +1,7 @@
 name: CI
 on: [push, pull_request, workflow_dispatch]
+env:
+  CI: true
 
 jobs:
   build:
@@ -34,7 +36,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
