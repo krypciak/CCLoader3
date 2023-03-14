@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@types/archiver": "^5.3.1",
+    "@types/jquery": "^1.10.31",
     "@types/node": ">=11.9",
     "@types/semver": "6.2.x || 6.3.x",
     "@typescript-eslint/eslint-plugin": "^5.2.0",

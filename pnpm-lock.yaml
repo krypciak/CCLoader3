@@ -2,6 +2,7 @@ lockfileVersion: 5.4
 
 specifiers:
   '@types/archiver': ^5.3.1
+  '@types/jquery': ^1.10.31
   '@types/node': '>=11.9'
   '@types/semver': 6.2.x || 6.3.x
   '@typescript-eslint/eslint-plugin': ^5.2.0
@@ -24,6 +25,7 @@ dependencies:
 
 devDependencies:
   '@types/archiver': 5.3.2
+  '@types/jquery': 1.10.31
   '@types/node': 18.15.3
   '@types/semver': 6.2.3
   '@typescript-eslint/eslint-plugin': 5.55.0_gbrymshiwbruly5dfbpezf4fny
@@ -142,8 +144,8 @@ packages:
       '@types/readdir-glob': 1.1.0
     dev: true
 
-  /@types/jquery/1.10.39:
-    resolution: {integrity: sha512-vY3MK/wp1XxEhXzmtFk0Ce5x2Y6PEVXz6hoCooe364O4OdFZVb5XT/qgHmflF/SHD0tDtCejvP9qolCYfX7XWA==}
+  /@types/jquery/1.10.31:
+    resolution: {integrity: sha512-g5y4mp3aX1KORN5jMlec3xoc0qc1VmdXwGsKMEUTDT9o8smd28KFNJaVqqENN6ZYDDWRwob052b7MjTa0XrP8A==}
     dev: true
 
   /@types/json-schema/7.0.11:
@@ -1572,7 +1574,7 @@ packages:
     version: 0.0.1
     engines: {node: '>=10.0.0'}
     dependencies:
-      '@types/jquery': 1.10.39
+      '@types/jquery': 1.10.31
       '@types/node': 18.15.3
       '@types/semver': 6.2.3
     dev: true
