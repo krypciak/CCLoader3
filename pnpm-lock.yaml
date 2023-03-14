@@ -17,7 +17,7 @@ specifiers:
   readdir-glob: ^1.1.1
   semver: '=6.3.0'
   typescript: ~4.8.4
-  ultimate-crosscode-typedefs: dmitmel/ultimate-crosscode-typedefs
+  ultimate-crosscode-typedefs: github:dmitmel/ultimate-crosscode-typedefs
 
 dependencies:
   jszip: 3.10.1
