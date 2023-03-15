@@ -30,8 +30,8 @@ export const imageGenerators = new PatchList<
 
   for (let mod of modloader.loadedMods.values()) {
     for (let asset of mod.assets) {
-      if (asset.endsWith('.json.patch')) {
-        let patchedAsset = asset.slice(0, -6);
+      if (asset.endsWith('.json.patch') || asset.endsWith('.patch.json')) {
+        let patchedAsset = asset.replace('.patch', '');
         registerPatchstepsPatch(mod, asset, patchedAsset);
         continue;
       }
