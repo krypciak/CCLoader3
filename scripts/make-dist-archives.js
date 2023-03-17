@@ -125,14 +125,14 @@ async function main() {
     createArchive(
       format.id,
       format.options,
-      `ccloader_${modloaderMeta.version}_package.${format.fileExt}`,
+      `ccloader_v${modloaderMeta.version}_package.${format.fileExt}`,
       (archive) => archiveAddModloaderFiles(archive, ''),
     );
 
     createArchive(
       format.id,
       format.options,
-      `ccloader_${modloaderMeta.version}_quick-install.${format.fileExt}`,
+      `ccloader_v${modloaderMeta.version}_quick-install.${format.fileExt}`,
       async (archive) => {
         let modloaderDirName = 'ccloader';
         let packageJsonData = {

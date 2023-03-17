@@ -1,0 +1,62 @@
+name: Release
+on:
+  push:
+    tags:
+      - v*
+
+env:
+  FORCE_COLOR: true
+
+jobs:
+  release:
+    name: Build and release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '19.x'
+      - run: npm i -g pnpm
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Create the distributables
+        run: node scripts/make-dist-archives.js
+
+      - name: Get some values needed for the release
+        id: release_values
+        run: |
+          echo "::set-output name=date::$(date '+%Y-%m-%d')"
+          echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+
+      - name: Create the release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ALYX_TOKEN }}
+        with:
+          name: ${{ steps.release_values.outputs.tag }}, ${{ steps.release_values.outputs.date }}
+          draft: true
+          prerelease: false
+          body_path: .github/release_body_template.md
+          files: |
+            ccloader_${{ steps.release_values.outputs.tag }}_package.tgz
+            ccloader_${{ steps.release_values.outputs.tag }}_package.zip
+            ccloader_${{ steps.release_values.outputs.tag }}_quick-install.tgz
+            ccloader_${{ steps.release_values.outputs.tag }}_quick-install.zip
