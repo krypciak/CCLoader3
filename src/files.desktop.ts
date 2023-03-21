@@ -59,8 +59,8 @@ export async function getModDirectoriesIn(dir: string, _config: Config): Promise
     allContents = await fs.readdir(dir);
   } catch (err) {
     if (utils.errorHasCode(err) && err.code === 'ENOENT') {
-      console.warn(`Directory '${dir}' not found, did you forget to create it?`);
-      return [];
+      await fs.mkdir(dir);
+      allContents = await fs.readdir(dir);
     }
     throw err;
   }
