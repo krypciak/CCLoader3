@@ -77,6 +77,7 @@ esbuild.build({
   entryPoints: {
     jszip: 'jszip/lib/index.js',
     semver: 'semver',
+    ajv: 'ajv/dist/ajv.js'
   },
   bundle: true,
   outdir: paths.resolve(__dirname, '../common/vendor-libs'),

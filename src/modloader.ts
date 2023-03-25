@@ -10,6 +10,7 @@ import * as modDataStorage from './mod-data-storage.js';
 import { LegacyManifest, Manifest } from 'ultimate-crosscode-typedefs/file-types/mod-manifest';
 import { LoadingStage, ModID } from 'ultimate-crosscode-typedefs/modloader/mod';
 import * as consoleM from '../common/dist/console.js';
+import ajv, { JSONSchemaType } from "../common/vendor-libs/ajv.js";
 
 type ModsMap = Map<ModID, Mod>;
 type ReadonlyModsMap = ReadonlyMap<ModID, Mod>;
@@ -198,11 +199,21 @@ async function loadAllModMetadata(config: configM.Config, installedMods: ModsMap
     }
   }
 
+  // TODO: cache this offline, add redundancies, (bundle with latest?).
+  let schema: JSONSchemaType<Manifest>;
+
+  // Need to cache it locally and add redundancy.
+  await fetch("https://schema.ccmod.xyz/1.0.0")
+    .then(response => response.json())
+    .then(data => {
+      schema = data;
+    });
+
   let modsCountPerDir = new Map<string, number>();
   await Promise.all(
     allModsList.map(async ({ parentDir, dir }) => {
       try {
-        let mod = await loadModMetadata(dir);
+        let mod = await loadModMetadata(dir, schema);
         if (mod == null) return;
 
         let modWithSameId = installedMods.get(mod.id);
@@ -250,54 +261,40 @@ async function findAllExtensions(
   }
 }
 
-let manifestValidator = new manifestM.Validator();
+async function loadModMetadata(baseDirectory: string, schema?: JSONSchemaType<Manifest>): Promise<Mod | null> {
+  let manifestFile: string = `${baseDirectory}/ccmod.json`;
+  return files.loadText(manifestFile)
+    .then(manifestText => {
+      const manifestData: Manifest = JSON.parse(manifestText);
+      if (schema) {
+        const ajvValidator = new ajv({ allErrors: true });
+        const validate = ajvValidator.compile(schema);
 
-async function loadModMetadata(baseDirectory: string): Promise<Mod | null> {
-  let manifestFile: string;
-  let manifestText: string;
-  let legacyMode = false;
-
-  try {
-    manifestFile = `${baseDirectory}/ccmod.json`;
-    manifestText = await files.loadText(manifestFile);
-  } catch (_e1) {
-    try {
-      legacyMode = true;
+        const isValid = validate(manifestData);
+        if (isValid) {
+          return new Mod(baseDirectory, manifestData, false);
+        } else {
+          console.error(validate.errors);
+          return null;
+        }
+      } else {
+        return new Mod(baseDirectory, manifestData, false);
+      }
+    })
+    .catch(reason => {
+      console.warn(`Failed to load ccmod.json, reason: ${reason.message}. Attempting to load legacy manifest.`)
       manifestFile = `${baseDirectory}/package.json`;
-      manifestText = await files.loadText(manifestFile);
-    } catch (_e2) {
-      return null;
-    }
-  }
-
-  let manifestData: Manifest | LegacyManifest;
-  try {
-    manifestData = JSON.parse(manifestText);
-  } catch (err) {
-    if (utils.errorHasMessage(err)) {
-      err.message = `Syntax error in mod manifest in '${manifestFile}': ${err.message}`;
-    }
-    throw err;
-  }
-
-  try {
-    if (legacyMode) {
-      manifestData = manifestData as LegacyManifest;
-      manifestValidator.validateLegacy(manifestData);
-      manifestData = manifestM.convertFromLegacy(manifestData);
-    } else {
-      manifestData = manifestData as Manifest;
-      manifestValidator.validate(manifestData);
-    }
-  } catch (err) {
-    if (utils.errorHasMessage(err)) {
-      err.message = `Invalid mod manifest in '${manifestFile}': ${err.message}`;
-      // TODO: put a link to the documentation here
-    }
-    throw err;
-  }
-
-  return new Mod(baseDirectory, manifestData, legacyMode);
+      return files.loadText(manifestFile)
+        .then(manifestText => {
+          console.warn(`Using legacy manifest for mod ${baseDirectory};`);
+          const legacyManifestData: LegacyManifest = JSON.parse(manifestText);
+          const manifestData: Manifest = manifestM.convertFromLegacy(legacyManifestData);
+          return new Mod(baseDirectory, manifestData, true);
+        }).catch(reason => {
+          console.error(`Failed to load legacy manifest, reason: ${reason.message}`);
+          return null;
+        })
+    });
 }
 
 async function initModPluginClasses(mods: ReadonlyModsMap): Promise<void> {
