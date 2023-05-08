@@ -49,7 +49,7 @@ export async function load(modloaderVersion: semver.SemVer): Promise<Config> {
 }
 
 function createDefaultConfig(): Config {
-  let gameAssetsDir = 'assets/';
+  let gameAssetsDir = utils.PLATFORM_TYPE === utils.PlatformType.ANDROID ? '/' : 'assets/';
 
   return {
     gameAssetsDir,
