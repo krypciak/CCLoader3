@@ -1,22 +1,23 @@
-// Fixes files from extensions potentially not being loaded during the game's loading
-// Author: https://github.com/EL20202
+// This module is based on the work done by EL20202 in his extension asset preloader mod:
 // https://github.com/EL20202/crosscode-extension-asset-preloader/blob/master/postload.js
+// Fixes files from extensions potentially not being loaded during the game's loading
 
-import { join } from 'path';
-import { existsSync, readFileSync, readdirSync } from 'fs';
+import { getInstalledExtensions } from '../../dist/files.js';
+import * as paths from '../../common/dist/paths.js';
+import * as files from '../../dist/files.js';
 
-const extensionFolder = 'assets/extension';
-
-let folders = readdirSync(extensionFolder);
-
-for (const extensionName of folders) {
-  const filepath = join(extensionFolder, extensionName);
-  if (existsSync(`${filepath}/${extensionName}.json`)) {
-    let data = JSON.parse(readFileSync(`${filepath}/${extensionName}.json`, { encoding: 'utf-8' }));
+const extensionFolder = paths.join(modloader.config.gameAssetsDir, 'extension');
+const exts = await getInstalledExtensions(modloader.config);
+for (const extensionName of exts) {
+  const filepath = paths.join(extensionFolder, extensionName);
+  const isReadable = await files.isReadable(`${filepath}/${extensionName}.json`);
+  if (isReadable) {
+    const text = await files.loadText(`${filepath}/${extensionName}.json`);
+    const data = JSON.parse(text);
 
     if (!data.files) break;
 
-    for (let extFile of data.files) {
+    for (const extFile of data.files) {
       ig.fileForwarding[extFile] = `extension/${extensionName}/${extFile}`;
     }
   }

@@ -129,6 +129,7 @@ export async function boot(): Promise<void> {
     gameVersion,
     gameVersionHotfix,
     installedMods,
+    config,
     loadedMods,
     modDataStorage: modDataStorage.namespace,
     Mod: {},
