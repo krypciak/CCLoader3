@@ -9,7 +9,7 @@ import * as configM from '../../dist/config.js';
 
 declare global {
   namespace modloader {
-    var config: configM.Config
+    const config: configM.Config;
   }
 }
 
