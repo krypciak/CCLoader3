@@ -5,6 +5,13 @@
 import { getInstalledExtensions } from '../../dist/files.js';
 import * as paths from '../../common/dist/paths.js';
 import * as files from '../../dist/files.js';
+import * as configM from '../../dist/config.js';
+
+declare global {
+  namespace modloader {
+    var config: configM.Config
+  }
+}
 
 const extensionFolder = paths.join(modloader.config.gameAssetsDir, 'extension');
 const exts = await getInstalledExtensions(modloader.config);

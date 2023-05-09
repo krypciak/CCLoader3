@@ -134,7 +134,7 @@ export async function boot(): Promise<void> {
     modDataStorage: modDataStorage.namespace,
     Mod: {},
     _runtimeMod: runtimeMod,
-  };
+  } as typeof modloader;
 
   console.log('beginning the game boot sequence...');
   await game.buildNecessaryDOM(config);
