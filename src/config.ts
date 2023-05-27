@@ -8,6 +8,7 @@ export interface Config {
   stylesheetURLs: string[];
   scriptURLs: string[];
   gameScriptURL: string;
+  // TODO(lexisother): DOCUMENT!!!
   impactConfig: Record<string, unknown>;
   onGameDOMCreated: () => utils.MaybePromise<void>;
 }

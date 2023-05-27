@@ -45,7 +45,7 @@ export async function getModDirectoriesIn(dir: string, _config: Config): Promise
 
 // Replicates the behavior of `ig.ExtensionList#loadExtensionsPHP`.
 export async function getInstalledExtensions(config: Config): Promise<string[]> {
-  let igRoot = config.impactConfig.IG_ROOT ?? '';
+  let igRoot = (config.impactConfig.IG_ROOT as string) ?? '';
   let igDebug = Boolean(config.impactConfig.IG_GAME_DEBUG);
   let extensionsApiUrl = `${igRoot}page/api/get-extension-list.php?debug=${igDebug ? 1 : 0}`;
   try {
