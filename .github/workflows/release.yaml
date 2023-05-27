@@ -41,20 +41,20 @@ jobs:
       - name: Get some values needed for the release
         id: release_values
         run: |
-          echo "::set-output name=date::$(date '+%Y-%m-%d')"
-          echo "::set-output name=tag::${GITHUB_REF#refs/tags/}"
+          echo "release_date=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "release_tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
       - name: Create the release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ALYX_TOKEN }}
         with:
-          name: ${{ steps.release_values.outputs.tag }}, ${{ steps.release_values.outputs.date }}
+          name: ${{ env.release_tag }}, ${{ env.release_date }}
           draft: true
           prerelease: false
           body_path: .github/release_body_template.md
           files: |
-            ccloader_${{ steps.release_values.outputs.tag }}_package.tgz
-            ccloader_${{ steps.release_values.outputs.tag }}_package.zip
-            ccloader_${{ steps.release_values.outputs.tag }}_quick-install.tgz
-            ccloader_${{ steps.release_values.outputs.tag }}_quick-install.zip
+            ccloader_${{ env.release_tag }}_package.tgz
+            ccloader_${{ env.release_tag }}_package.zip
+            ccloader_${{ env.release_tag }}_quick-install.tgz
+            ccloader_${{ env.release_tag }}_quick-install.zip
