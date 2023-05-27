@@ -5,6 +5,7 @@ on:
       - v*
 
 env:
+  CI: true
   FORCE_COLOR: true
 
 jobs:
@@ -17,19 +18,8 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '19.x'
+          cache: 'pnpm'
       - run: npm i -g pnpm
-
-      - name: Get pnpm store directory
-        id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        name: Setup pnpm cache
-        with:
-          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
