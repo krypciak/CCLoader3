@@ -77,6 +77,7 @@ esbuild.build({
   entryPoints: {
     jszip: 'jszip/lib/index.js',
     semver: 'semver',
+    'strip-json-comments': 'strip-json-comments',
   },
   bundle: true,
   outdir: paths.resolve(__dirname, '../common/vendor-libs'),

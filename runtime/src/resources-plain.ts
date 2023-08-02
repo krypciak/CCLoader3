@@ -1,4 +1,5 @@
 import * as utils from '../../common/dist/utils.js';
+import stripJsonComments from '../../common/vendor-libs/strip-json-comments.js';
 
 import { loadScript, loadStylesheet } from '../../common/dist/resources.js';
 
@@ -19,7 +20,7 @@ export async function loadText(url: string): Promise<string> {
 export async function loadJSON<T = unknown>(url: string): Promise<T> {
   let text = await loadText(url);
   try {
-    return JSON.parse(text);
+    return JSON.parse(stripJsonComments(text));
   } catch (err) {
     if (utils.errorHasMessage(err)) {
       err.message = `Failed to parse JSON file '${url}': ${err.message}`;
