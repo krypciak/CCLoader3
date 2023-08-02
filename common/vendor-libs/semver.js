@@ -3,9 +3,9 @@ var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 
-// node_modules/semver/semver.js
+// node_modules/.pnpm/semver@6.3.0/node_modules/semver/semver.js
 var require_semver = __commonJS({
-  "node_modules/semver/semver.js"(exports, module) {
+  "node_modules/.pnpm/semver@6.3.0/node_modules/semver/semver.js"(exports, module) {
     exports = module.exports = SemVer;
     var debug;
     if (typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG)) {
