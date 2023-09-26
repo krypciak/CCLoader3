@@ -7,6 +7,6 @@
   "assets": ["data/lang/sc/gui.en_US.json.patch"],
   "dependencies": {
     "crosscode": "^1.1.0 || 1.0.2",
-    "ccloader": "^3.3.0-alpha"
+    "ccloader": "^3.3.1-alpha"
   }
 }
