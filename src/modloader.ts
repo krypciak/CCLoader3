@@ -181,7 +181,11 @@ async function loadModloaderMetadata(): Promise<{ version: semver.SemVer }> {
   let filePath = utils.cwdFilePathFromURL(new URL('../metadata.json', import.meta.url));
   let jsonText = await files.loadText(filePath);
   let data = JSON.parse(jsonText) as { version: string };
-  return { version: new semver.SemVer(data.version) };
+  return {
+    version: new semver.SemVer(data.version, {
+      includePrerelease: true,
+    }),
+  };
 }
 
 async function loadAllModMetadata(config: configM.Config, installedMods: ModsMap): Promise<void> {

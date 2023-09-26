@@ -31,7 +31,9 @@ export class Mod implements ModPublic {
 
     if (this.manifest.version != null) {
       try {
-        this.version = new semver.SemVer(this.manifest.version);
+        this.version = new semver.SemVer(this.manifest.version, {
+          includePrerelease: true,
+        });
       } catch (err) {
         if (utils.errorHasMessage(err)) {
           // TODO: put a link to semver docs here
@@ -49,7 +51,9 @@ export class Mod implements ModPublic {
 
         let depVersionRange: semver.Range;
         try {
-          depVersionRange = new semver.Range(dep.version);
+          depVersionRange = new semver.Range(dep.version, {
+            includePrerelease: true,
+          });
         } catch (err) {
           if (utils.errorHasMessage(err)) {
             err.message = `dependency version constraint '${dep.version}' for mod '${depId}' is not a valid semver range: ${err.message}`;
