@@ -12,39 +12,29 @@
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
 
-import {photocopy, photomerge} from './patchsteps-utils.js';
-import {StepMachine} from './patchsteps-stepmachine.js';
-// The following are definitions used for reference in DebugState.
-/*
- * ParsedPath is actually any type that translateParsedPath can understand.
- * And translateParsedPath can be overridden by the user.
- * But the types declared here are those that will be received no matter what.
- * declare type ParsedPath = null | [fromGame: true | false | string, url: string];
- *
- * declare type FileInfo = {
- *  path: string;
- *  stack: StackEntry[];
- * };
- *
- * declare type StackEntry = StackEntryStep | StackEntryError;
- * declare type StackEntryStep = {
- *  type: "Step";
- * };
- * declare type StackEntryError = {
- *  type: "Error";
- *  errorType: string;
- *  errorMessage: string;
- * };
- */
+import { photocopy, photomerge } from './patchsteps-utils';
+import {
+  AnyPatchStep,
+  FileInfo,
+  Index,
+  Loader,
+  ParsedPath,
+  PatchFile,
+  PatchStep,
+  StackEntry,
+} from 'ultimate-crosscode-typedefs/patch-steps-lib';
+import { Applier, Appliers, ApplierState, unsafeAssert } from './types';
+import { StepMachine } from './patchsteps-stepmachine';
 
 // Error handling for appliers.
 // You are expected to subclass this class if you want additional functionality.
 export class DebugState {
+  fileStack: FileInfo[];
+  currentFile: FileInfo | null;
+
   // The constructor. The default state of a DebugState is invalid; a file must be added (even if null) to make it valid.
   constructor() {
-    // FileInfo[]
     this.fileStack = [];
-    // FileInfo
     this.currentFile = null;
   }
 
@@ -52,7 +42,7 @@ export class DebugState {
    * Translates a ParsedPath into a string.
    * Overridable.
    */
-  translateParsedPath(parsedPath) {
+  translateParsedPath(parsedPath: ParsedPath | null): string {
     if (parsedPath === null) return '(unknown file)';
     // By default, we know nothing.
     // see: parsePath, loader's definition
@@ -69,7 +59,7 @@ export class DebugState {
    * Enters a file by parsedPath. Do not override.
    * @final
    */
-  addFile(parsedPath) {
+  addFile(parsedPath: ParsedPath): void {
     const path = this.translateParsedPath(parsedPath);
     const fileInfo = {
       path,
@@ -83,18 +73,18 @@ export class DebugState {
    * Removes a pushed file.
    * @final
    */
-  removeLastFile() {
+  removeLastFile(): FileInfo {
     const lastFile = this.fileStack.pop();
     this.currentFile = this.fileStack[this.fileStack.length - 1];
-    return lastFile;
+    return lastFile!;
   }
 
   /**
    * Enters a step. Note that calls to this *surround* applyStep as the index is not available to it.
    * @final
    */
-  addStep(index, name = '', functionName = '') {
-    this.currentFile.stack.push({
+  addStep(index: Index, name = '', functionName = ''): void {
+    this.currentFile!.stack.push({
       type: 'Step',
       index,
       name,
@@ -106,41 +96,43 @@ export class DebugState {
    * Leaves a step.
    * @final
    */
-  removeLastStep() {
-    const stack = this.currentFile.stack;
-    let currentStep = null;
+  removeLastStep(): StackEntry.Step {
+    const stack = this.currentFile!.stack;
+    let currentStep: StackEntry.Step | null = null;
     for (let index = stack.length - 1; index >= 0; index--) {
-      if (stack[index].type === 'Step') {
-        currentStep = stack[index];
+      const entry = stack[index];
+      if (entry.type === 'Step') {
+        currentStep = entry;
         stack.splice(index, 1);
         index = -1;
       }
     }
-    return currentStep;
+    return currentStep!;
   }
 
   /**
    * Gets the last (i.e. current) step.
    * @final
    */
-  getLastStep() {
-    const stack = this.currentFile.stack;
-    let currentStep = null;
+  getLastStep(): StackEntry.Step {
+    const stack = this.currentFile!.stack;
+    let currentStep: StackEntry.Step | null = null;
     for (let index = stack.length - 1; index >= 0; index--) {
-      if (stack[index].type === 'Step') {
-        currentStep = stack[index];
+      const entry = stack[index];
+      if (entry.type === 'Step') {
+        currentStep = entry;
         index = -1;
       }
     }
-    return currentStep;
+    return currentStep!;
   }
 
   /**
    * Throws this instance as an error.
    * @final
    */
-  throwError(type, message) {
-    this.currentFile.stack.push({
+  throwError(type: string, message: string): void {
+    this.currentFile!.stack.push({
       type: 'Error',
       errorType: type,
       errorMessage: message,
@@ -152,7 +144,7 @@ export class DebugState {
    * Prints information about a specific file on the stack.
    * Overridable.
    */
-  printFileInfo(file) {
+  printFileInfo(file: FileInfo): void {
     console.log(`File %c${file.path}`, 'red');
     let message = '';
     const stack = file.stack;
@@ -185,7 +177,7 @@ export class DebugState {
    * Prints information about the whole stack.
    * @final
    */
-  print() {
+  print(): void {
     for (let fileIndex = 0; fileIndex < this.fileStack.length; fileIndex++) {
       this.printFileInfo(this.fileStack[fileIndex]);
     }
@@ -195,62 +187,58 @@ export class DebugState {
    * Run at the start of applyStep; after the step has been entered formally, but before executing it.
    * Overridable.
    */
-  async beforeStep() {}
+  async beforeStep(): Promise<void> {}
 
   /**
    * Run at the end of applyStep; after executing the step, but before leaving it formally.
    * Overridable.
    */
-  async afterStep() {}
+  async afterStep(): Promise<void> {}
+}
+
+export interface State {
+  currentValue: unknown;
+  stack: unknown[];
+  debugState: DebugState;
+  debug: boolean;
 }
 
 /**
- * @typedef State
- * @property {unknown} currentValue
- * @property {unknown[]} stack
- * @property {(fromGame: boolean| string, path: string) => Promise<any>}
- * @property {DebugState} debugState
- * @property {boolean} debug
- * /
-
- /**
  * A user defined step that is distinguishable from builtin PatchSteps.
  * Errors that occur in callables are not handled by the PatchSteps interpreter.
- *
- * @async
- * @callback Callable
- * @param {State} state is the internal PatchStep state.
- * @param {unknown} args is the user supplied arguments.
  */
+export type Callable = (state: State, args: unknown) => Promise<void>;
 
-/* @type {Map<string,Callable>} */
-export const callables = new Map();
+export const callables = new Map<string, Callable>();
 
 // Custom extensions are registered here.
 // Their 'this' is the Step, they are passed the state, and they are expected to return a Promise.
 // In practice this is done with async old-style functions.
-export const appliers = {};
+export const appliers = {} as Appliers;
 
 /*
- * @param {any} a The object to modify
- * @param {object|object[]} steps The patch, fresh from the JSON. Can be in legacy or Patch Steps format.
- * @param {(fromGame: boolean | string, path: string) => Promise<any>} loader The loading function.
+ * @param a The object to modify
+ * @param steps The patch, fresh from the JSON. Can be in legacy or Patch Steps format.
+ * @param loader The loading function.
  *  NOTE! IF CHANGING THIS, KEEP IN MIND DEBUGSTATE translatePath GETS ARGUMENTS ARRAY OF THIS.
  *  ALSO KEEP IN MIND THE parsePath FUNCTION!
  *  For fromGame: false this gets a file straight from the mod, such as "package.json".
  *  For fromGame: true this gets a file from the game, which is patched by the host if relevant.
  *  If the PatchSteps file passes a protocol that is not understood, then, and only then, will a string be passed (without the ":" at the end)
  *  In this case, fromGame is set to that string, instead.
- * @param [debugState] debugState The DebugState stack tracer.
+ * @param debugState The DebugState stack tracer.
  *  If not given, will be created. You need to pass your own instance of this to have proper filename tracking.
- * @return {Promise<void>} A Promise
+ * @return A Promise
  */
-export async function patch(a, steps, loader, debugState) {
+export async function patch(a: unknown, steps: PatchFile, loader: Loader, debugState?: DebugState) {
   if (!debugState) {
     debugState = new DebugState();
     debugState.addFile(null);
   }
   if (steps.constructor === Object) {
+    unsafeAssert<Record<string, Object & Record<string, unknown>>>(steps);
+    unsafeAssert<Record<string, unknown>>(a);
+
     // Standardized Mods specification
     for (let k in steps) {
       // Switched back to a literal translation in 1.0.2 to make it make sense with spec, it's more awkward but simpler.
@@ -266,6 +254,7 @@ export async function patch(a, steps, loader, debugState) {
     }
     return;
   }
+  unsafeAssert<AnyPatchStep[]>(steps);
   const state = {
     currentValue: a,
     stack: [],
@@ -278,12 +267,11 @@ export async function patch(a, steps, loader, debugState) {
     functionName: '',
     stepReferenceIndex: 0,
   };
-
   for (const [absoluteStepIndex, step] of state.stepMachine.run()) {
     try {
       const stepIndex = absoluteStepIndex - state.stepReferenceIndex;
       debugState.addStep(stepIndex, '', state.functionName);
-      await applyStep(step, state, debugState);
+      await applyStep(step, state);
       debugState.removeLastStep();
     } catch (e) {
       debugState.print();
@@ -295,55 +283,74 @@ export async function patch(a, steps, loader, debugState) {
   }
 }
 
-async function applyStep(step, state) {
+async function applyStep(step: AnyPatchStep, state: ApplierState) {
   await state.debugState.beforeStep();
   if (callables.has(step['type'])) {
+    let sstep = step as PatchStep.CALL;
     // Let users call it like a native patchstep
-    let callableId = step['type'];
-    let callableStep = photocopy(step);
+    let callableId = sstep['type'];
+    let callableStep = photocopy(sstep);
+
+    // @ts-expect-error this is a BS requirement
     delete callableStep['type'];
-    step = {
+    sstep = {
       type: 'CALL',
       id: callableId,
       args: callableStep,
     };
     state.debugState.getLastStep().name = callableId;
     // Prevent user from breaking everything by creating a "CALL" callable
-    await appliers['CALL'].call(step, state);
+    await appliers['CALL'].call(sstep, state);
   } else {
     state.debugState.getLastStep().name = step['type'];
+    // @ts-expect-error not sure how to refine the AnyPatchStep type so it accepts strings
     if (!appliers[step['type']]) {
       state.debugState.getLastStep().name = '';
       state.debugState.throwError('TypeError', `${step['type']} is not a valid type.`);
     }
-    await appliers[step['type']].call(step, state);
+    // @ts-expect-error not sure how to refine the AnyPatchStep type so it accepts strings
+    await (appliers[step['type']] as Applier<any>).call(step, state);
   }
   await state.debugState.afterStep();
 }
 
-function replaceObjectProperty(object, key, keyword, value) {
-  let oldValue = object[key];
+function replaceObjectProperty<O extends Object>(
+  object: O,
+  key: keyof O,
+  keyword: string | Record<string, string>,
+  value: string | { [replacementId: string]: string | number },
+) {
+  let oldValue = object[key] as string;
   // It's more complex than we thought.
   if (!Array.isArray(keyword) && typeof keyword === 'object') {
     // go through each and check if it matches anywhere.
     for (const property in keyword) {
       if (keyword[property]) {
-        object[key] = oldValue.replace(new RegExp(keyword[property], 'g'), value[property] || '');
-        oldValue = object[key];
+        object[key] = oldValue.replace(
+          new RegExp(keyword[property], 'g'),
+          ((value as { [replacementId: string]: string | number })[property] as string) || '',
+        ) as O[keyof O];
+        oldValue = object[key] as string;
       }
     }
   } else {
-    object[key] = oldValue.replace(new RegExp(keyword, 'g'), value);
+    object[key] = oldValue.replace(
+      new RegExp(keyword as string, 'g'),
+      value as string,
+    ) as O[keyof O];
   }
 }
 
 /**
- * @param {object} obj The object to search and replace the values of
- * @param {RegExp| {[replacementId: string]: RegExp}} keyword The expression to match against
- * @param {String| {[replacementId]: string | number}} value The value the replace the match
- * @returns {void}
+ * @param obj The object to search and replace the values of
+ * @param keyword The expression to match against
+ * @param value The value the replace the match
  * */
-function valueInsertion(obj, keyword, value) {
+function valueInsertion(
+  obj: unknown,
+  keyword: string | Record<string, string>,
+  value: string | { [replacementId: string]: string | number },
+) {
   if (Array.isArray(obj)) {
     for (let index = 0; index < obj.length; index++) {
       const child = obj[index];
@@ -354,10 +361,11 @@ function valueInsertion(obj, keyword, value) {
       }
     }
   } else if (typeof obj === 'object') {
+    unsafeAssert<Record<string, unknown>>(obj);
     for (let key in obj) {
       if (!obj[key]) continue;
       if (typeof obj[key] === 'string') {
-        replaceObjectProperty(obj, key, keyword, value);
+        replaceObjectProperty(obj as Record<string, string>, key, keyword, value);
       } else {
         valueInsertion(obj[key], keyword, value);
       }
@@ -387,7 +395,7 @@ appliers['FOR_IN'] = async function (state) {
   for (let i = 0; i < values.length; i++) {
     const cloneBody = photocopy(body);
     const value = values[i];
-    valueInsertion(cloneBody, keyword, value);
+    valueInsertion(cloneBody, keyword, value as { [replacementId: string]: string | number });
     state.debugState.addStep(i, 'VALUE_INDEX');
     for (let index = 0; index < cloneBody.length; index++) {
       const statement = cloneBody[index];
@@ -423,17 +431,16 @@ appliers['PASTE'] = async function (state) {
     const obj = {
       type: 'ADD_ARRAY_ELEMENT',
       content: value,
+      ...(typeof this['index'] === 'number' && !isNaN(this['index'])
+        ? { index: this['index'] }
+        : {}),
     };
-
-    if (!isNaN(this['index'])) {
-      obj.index = this['index'];
-    }
-    await applyStep(obj, state);
+    await applyStep(obj as PatchStep.ADD_ARRAY_ELEMENT, state);
   } else if (typeof state.currentValue === 'object') {
     await applyStep(
       {
         type: 'SET_KEY',
-        index: this['index'],
+        index: this['index']!,
         content: value,
       },
       state,
@@ -454,12 +461,12 @@ appliers['ENTER'] = async function (state) {
     state.debugState.throwError('Error', 'index must be set.');
   }
 
-  let path = [this['index']];
-  if (this['index'].constructor == Array) path = this['index'];
+  const path = Array.isArray(this['index']) ? this['index'] : [this['index']];
   for (let i = 0; i < path.length; i++) {
     const idx = path[i];
+    unsafeAssert<StackEntry>(state.currentValue);
     state.stack.push(state.currentValue);
-    if (state.currentValue[idx] === undefined) {
+    if (state.currentValue[idx as keyof StackEntry] === undefined) {
       const subArr = path.slice(0, i + 1);
       state.debugState.throwError(
         'Error',
@@ -467,13 +474,13 @@ appliers['ENTER'] = async function (state) {
       );
     }
 
-    state.currentValue = state.currentValue[idx];
+    state.currentValue = state.currentValue[idx as keyof StackEntry];
   }
 };
 
 appliers['EXIT'] = async function (state) {
   let count = 1;
-  if ('count' in this) count = this['count'];
+  if (this['count'] !== undefined) count = this['count'];
   for (let i = 0; i < count; i++) {
     if (state.stack.length === 0) {
       state.debugState.throwError('Error', `EXIT #${count + 1} leads to an undefined state.`);
@@ -487,6 +494,8 @@ appliers['SET_KEY'] = async function (state) {
     state.debugState.throwError('Error', 'index must be set.');
   }
 
+  unsafeAssert<Record<number | string, unknown>>(state.currentValue);
+
   if ('content' in this) {
     state.currentValue[this['index']] = photocopy(this['content']);
   } else {
@@ -495,11 +504,14 @@ appliers['SET_KEY'] = async function (state) {
 };
 
 appliers['REMOVE_ARRAY_ELEMENT'] = async function (state) {
+  unsafeAssert<unknown[]>(state.currentValue);
   state.currentValue.splice(this['index'], 1);
 };
 
 appliers['ADD_ARRAY_ELEMENT'] = async function (state) {
-  if ('index' in this) {
+  unsafeAssert<unknown[]>(state.currentValue);
+
+  if (this['index'] !== undefined) {
     state.currentValue.splice(this['index'], 0, photocopy(this['content']));
   } else {
     state.currentValue.push(photocopy(this['content']));
@@ -507,7 +519,7 @@ appliers['ADD_ARRAY_ELEMENT'] = async function (state) {
 };
 
 // Reintroduced but simplified version of Emileyah's resolveUrl
-function parsePath(url, fromGame) {
+function parsePath(url: string, fromGame: boolean): [boolean | string, string] {
   try {
     const decomposedUrl = new URL(url);
     const protocol = decomposedUrl.protocol;
@@ -530,21 +542,23 @@ function parsePath(url, fromGame) {
 
 appliers['IMPORT'] = async function (state) {
   if (!('src' in this)) {
-    state.debugState.throwError('ValueError', 'sc must be set.');
+    state.debugState.throwError('ValueError', 'src must be set.');
   }
 
   const srcPath = parsePath(this['src'], true);
   let obj = await state.loader.apply(state, srcPath);
 
-  if ('path' in this) {
+  if (this['path'] !== undefined) {
     if (!Array.isArray(this['path'])) {
       state.debugState.throwError('ValueError', 'path must be an array.');
     }
-    for (let i = 0; i < this['path'].length; i++) obj = obj[this['path'][i]];
+    for (let i = 0; i < this['path'].length; i++)
+      obj = (obj as Record<string | number, unknown>)[this['path'][i]];
   }
 
-  if ('index' in this) {
-    state.currentValue[this['index']] = photocopy(obj);
+  if (this['index'] !== undefined) {
+    unsafeAssert<Record<string | number, unknown>>(state.currentValue);
+    state.currentValue![this['index']] = photocopy(obj);
   } else {
     photomerge(state.currentValue, obj);
   }
@@ -552,14 +566,14 @@ appliers['IMPORT'] = async function (state) {
 
 appliers['INCLUDE'] = async function (state) {
   if (!('src' in this)) {
-    state.debugState.throwError('ValueError', 'sc must be set.');
+    state.debugState.throwError('ValueError', 'src must be set.');
   }
 
   const srcPath = parsePath(this['src'], false);
   const data = await state.loader.apply(state, srcPath);
 
   state.debugState.addFile(srcPath);
-  await patch(state.currentValue, data, state.loader, state.debugState);
+  await patch(state.currentValue, data as PatchFile, state.loader, state.debugState);
   state.debugState.removeLastFile();
 };
 
@@ -567,6 +581,8 @@ appliers['INIT_KEY'] = async function (state) {
   if (!('index' in this)) {
     state.debugState.throwError('ValueError', 'index must be set.');
   }
+
+  unsafeAssert<Record<string | number, unknown>>(state.currentValue);
 
   if (!(this['index'] in state.currentValue))
     state.currentValue[this['index']] = photocopy(this['content']);
@@ -584,6 +600,3 @@ appliers['MERGE_CONTENT'] = async function (state) {
 
   photomerge(state.currentValue, this['content']);
 };
-
-// Is a NOP step used to refer to code.
-appliers['LABEL'] = async function (state) {};

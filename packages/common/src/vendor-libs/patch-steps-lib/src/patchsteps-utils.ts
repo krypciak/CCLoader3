@@ -10,29 +10,29 @@
 /**
  * A generic merge function.
  * NOTE: This should match Patch Steps specification, specifically how IMPORT merging works.
- * @param {any} a The value to merge into.
- * @param {any} b The value to merge from.
- * @returns {any} a
+ * @param a The value to merge into.
+ * @param b The value to merge from.
+ * @returns a
  */
-export function photomerge(a, b) {
-	if (b.constructor === Object) {
-		for (let k in b)
-			a[photocopy(k)] = photocopy(b[k]);
-	} else if (b.constructor == Array) {
+export function photomerge<A, B>(a: A, b: B): A & B {
+   if (Array.isArray(b)) {
 		for (let i = 0; i < b.length; i++)
-			a.push(photocopy(b[i]));
-	} else {
+          (a as any[]).push(photocopy(b[i]));
+   } else if (b instanceof Object) {
+        for (let k in b)
+         (a as Record<string, any>)[photocopy(k)] = photocopy((b as Record<string, any>)[k]);
+   } else {
 		throw new Error("We can't do that! ...Who'd clean up the mess?");
 	}
-	return a;
+	return a as A & B;
 }
 
 /**
  * A generic copy function.
- * @param {any} a The value to copy.
- * @returns {any} copied value
+ * @param o The value to copy.
+ * @returns copied value
  */
-export function photocopy(o) {
+export function photocopy<O>(o: O): O {
 	if (o) {
 		if (o.constructor === Array)
 			return photomerge([], o);
@@ -41,4 +41,3 @@ export function photocopy(o) {
 	}
 	return o;
 }
-
