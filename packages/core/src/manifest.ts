@@ -205,7 +205,7 @@ export class Validator {
   }
 
   private assertPeople(valuePath: JsonPath, value: Person[] | undefined): void {
-    let assertion = this.assertType(valuePath, value, [Type.array], true);
+    let assertion = this.assertType(valuePath, value, [Type.array, Type.string], true);
     if (assertion.status !== 'ok') return;
     value = value!;
 
