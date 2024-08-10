@@ -2,6 +2,7 @@ import * as paths from '@ccloader3/common/paths';
 import { stdlibNamespace as utils } from '@ccloader3/common/utils';
 import requireFixed from '@ccloader3/common/require';
 import semver from '@ccloader3/common/vendor-libs/semver';
+import jszip from '@ccloader3/common/vendor-libs/jszip';
 import * as patchStepsLib from '@ccloader3/common/vendor-libs/patch-steps';
 
 import { namespace as patchList } from './patch-list';
@@ -25,6 +26,7 @@ export default class RuntimeModMainClass implements modloader.Mod.PluginClass {
       utils,
       require: requireFixed,
       semver,
+      jszip,
       // @ts-expect-error genuinely no idea what's going on here.
       patchStepsLib,
       patchList,
