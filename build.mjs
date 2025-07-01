@@ -7,6 +7,8 @@ const config = {
     runtime: 'packages/runtime/src/_main.ts'
 };
 
+const isWatch = process.argv[2] == 'watch'
+
 async function build(name, entry) {
     let outfile = path.join('./dist', `${name}.js`);
     if (name === "runtime") outfile = path.join('./dist', 'runtime', 'main.js');
@@ -39,8 +41,15 @@ async function build(name, entry) {
             })
         ]
     };
+    
+    const ctx = await esbuild.context(esbuildConfig)
 
-    await esbuild.build(esbuildConfig);
+    if (isWatch) {
+        await ctx.watch();
+    } else {
+        await ctx.rebuild();
+        process.exit()
+    }
 }
 
 const promises = [];

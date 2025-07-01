@@ -28,6 +28,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
+    "watch": "node build.mjs watch",
     "lint": "eslint . --ext .js,.ts --ignore-path .eslintignore",
     "check-fmt": "prettier --check '**/*.{js,ts,json,css,html}'",
     "format": "prettier --write **/*.{js,ts,json,css,html}"
