@@ -1,9 +1,9 @@
 // @ts-nocheck
-// ../node_modules/.pnpm/strip-json-comments@5.0.1/node_modules/strip-json-comments/index.js
+// node_modules/.pnpm/strip-json-comments@5.0.2/node_modules/strip-json-comments/index.js
 var singleComment = Symbol("singleComment");
 var multiComment = Symbol("multiComment");
 var stripWithoutWhitespace = () => "";
-var stripWithWhitespace = (string, start, end) => string.slice(start, end).replace(/\S/g, " ");
+var stripWithWhitespace = (string, start, end) => string.slice(start, end).replace(/[^ \t\r\n]/g, " ");
 var isEscaped = (jsonString, quotePosition) => {
   let index = quotePosition - 1;
   let backslashCount = 0;
