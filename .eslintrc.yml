@@ -39,3 +39,7 @@ overrides:
     extends: eslint-config-dmitmel/rules/typescript/with-type-checking
     parserOptions:
       project: tsconfig.json
+    rules:
+      # Purely here because we deal with strange function overrides and dynamic imports of node internals.
+      # TS may think that something logically speaking "could never be null", but that doesn't mean it won't be at runtime.
+      "@typescript-eslint/no-unnecessary-condition": off

@@ -13,12 +13,12 @@ export function add(moduleName: string | RegExp, callback: ImpactModuleHook): vo
 impactInitHooks.add(() => {
   let originalDefines = ig.defines;
   ig.defines = function (body) {
-    let { name }: ig.Module = ig._current!;
+    let { name }: ig.Module = ig._current;
     if (name == null) return originalDefines.call(this, body);
 
     return originalDefines.call(this, function (this: unknown, ...args: []) {
       body.apply(this, args);
-      for (let callback of patchList.forPath(name!)) callback(name!);
+      for (let callback of patchList.forPath(name)) callback(name);
     });
   };
 });

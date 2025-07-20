@@ -1,6 +1,6 @@
 import * as utils from './utils';
 
-const nodejsUtil = window.require?.('util') as typeof import('util');
+const nodejsUtil = window.require('util') as typeof import('util');
 
 export enum LogLevel {
   LOG = 2,
@@ -91,6 +91,7 @@ export function inject(): void {
   function hookConsoleMethod(name: 'error' | 'warn' | 'log' | 'info', level: LogLevel): void {
     let old = console[name] as (...message: unknown[]) => void;
     console[name] = function (...message: unknown[]): void {
+      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       let result = old.apply(this, message);
       log(level, ...message);
       return result;

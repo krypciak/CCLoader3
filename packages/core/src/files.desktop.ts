@@ -1,8 +1,8 @@
 import * as utils from '@ccloader3/common/utils';
 import { Config } from './config';
 
-const fs = (window.require?.('fs') as typeof import('fs'))?.promises;
-const fsconst = (window.require?.('fs') as typeof import('fs'))?.constants;
+const fs = (window.require('fs') as typeof import('fs')).promises;
+const fsconst = (window.require('fs') as typeof import('fs')).constants;
 
 export async function loadText(path: string): Promise<string> {
   return fs.readFile(path, 'utf8');
