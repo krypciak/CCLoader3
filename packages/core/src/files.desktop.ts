@@ -7,7 +7,7 @@ const fs: typeof import('fs') = window.require?.('fs');
 
 function preparePath(path: string): string {
   if (isCCModPath(path)) {
-    if (!path.startsWith('/')) path = `/${  path}`;
+    if (!path.startsWith('/')) path = `/${path}`;
   }
   return path;
 }

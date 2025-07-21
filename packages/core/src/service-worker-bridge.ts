@@ -20,7 +20,7 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
     });
   }
 
-  const {controller} = window.navigator.serviceWorker;
+  const { controller } = window.navigator.serviceWorker;
   if (!controller || controller.state !== 'activated') {
     window.location.reload();
     window.location.href = window.location.toString();
@@ -35,7 +35,7 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
 }
 
 function sendMessage(packet: unknown): void {
-  const {controller} = window.navigator.serviceWorker;
+  const { controller } = window.navigator.serviceWorker;
   controller?.postMessage(packet);
 }
 
@@ -57,16 +57,18 @@ let validCCModPaths: string[] | undefined;
 export function isCCModPath(path: string): boolean {
   if (!validCCModPaths) return false;
 
-  if (!path.startsWith('/')) path = `/${  path}`;
+  if (!path.startsWith('/')) path = `/${path}`;
   return validCCModPaths.some(
     (pathPrefix) => path.length > pathPrefix.length && path.startsWith(pathPrefix),
   );
 }
 
-export async function loadCCMods(allModsList: Array<{ parentDir: string; dir: string }>): Promise<void> {
+export async function loadCCMods(
+  allModsList: Array<{ parentDir: string; dir: string }>,
+): Promise<void> {
   const ccmods: typeof allModsList = allModsList.filter((mod) => mod.dir.endsWith('.ccmod'));
   const ccmodArrayBuffers = await Promise.all(
-    ccmods.map(async (mod) => (await fetch(`../${  mod.dir}`)).arrayBuffer()),
+    ccmods.map(async (mod) => (await fetch(`../${mod.dir}`)).arrayBuffer()),
   );
 
   const mounts: Parameters<typeof configure>[0]['mounts'] = Object.fromEntries(
@@ -77,6 +79,6 @@ export async function loadCCMods(allModsList: Array<{ parentDir: string; dir: st
     mounts,
   });
 
-  validCCModPaths = ccmods.map((mod) => `/${  mod.dir}`);
+  validCCModPaths = ccmods.map((mod) => `/${mod.dir}`);
   sendMessage(validCCModPaths);
 }
