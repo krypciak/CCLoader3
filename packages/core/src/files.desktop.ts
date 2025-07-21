@@ -5,9 +5,9 @@ import { fs as zenFs } from '@zenfs/core';
 import { isCCModPath } from './service-worker-bridge';
 const fs: typeof import('fs') = window.require?.('fs');
 
-function preparePath(path: string) {
+function preparePath(path: string): string {
   if (isCCModPath(path)) {
-    if (path[0] != '/') path = '/' + path;
+    if (!path.startsWith('/')) path = `/${  path}`;
   }
   return path;
 }

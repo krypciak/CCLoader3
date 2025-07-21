@@ -10,6 +10,12 @@
   "dependencies": {
     "@ccloader3/common": "workspace:*",
     "@ccloader3/runtime": "workspace:*",
-    "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs"
+    "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs",
+    "@zenfs/archives": "^1.2.3",
+    "@zenfs/core": "^2.3.4",
+    "@zenfs/dom": "^1.1.8"
+  },
+  "devDependencies": {
+    "@types/serviceworker": "^0.0.145"
   }
 }

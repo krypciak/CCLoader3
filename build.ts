@@ -3,7 +3,7 @@ import copyStaticFiles from 'esbuild-copy-static-files';
 import path from 'path';
 import * as fs from 'fs';
 
-const isWatch = process.argv[2] == 'watch';
+const isWatch = process.argv[2] === 'watch';
 
 function donePlugin(outfile: string, modifyCode?: (code: string) => string): esbuild.Plugin {
   return {
@@ -19,7 +19,7 @@ function donePlugin(outfile: string, modifyCode?: (code: string) => string): esb
 
         const bytes = code.length;
         const kb = bytes / 1024;
-        console.log(outfile, kb.toFixed(1) + 'kb');
+        console.log(outfile, `${kb.toFixed(1)}kb`);
       });
     },
   };
@@ -104,9 +104,9 @@ function ccmodServiceWorker(): esbuild.BuildOptions {
   };
 }
 
-const modules: (() => esbuild.BuildOptions)[] = [core, runtime, ccmodServiceWorker];
+const modules: Array<() => esbuild.BuildOptions> = [core, runtime, ccmodServiceWorker];
 
-async function run() {
+async function run(): Promise<void> {
   fs.promises.mkdir('./dist', { recursive: true });
 
   if (isWatch) {
@@ -123,6 +123,7 @@ async function run() {
         await esbuild.build(module());
       }),
     );
+    // eslint-disable-next-line no-process-exit
     process.exit(); // because esbuild keeps the process alive for some reason
   }
 }

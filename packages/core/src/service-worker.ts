@@ -1,11 +1,11 @@
 import type { ServiceWorkerPacket } from './service-worker-bridge';
 
 self.addEventListener('activate', () => {
-  self.clients.claim();
+  void self.clients.claim();
 });
 
 self.addEventListener('install', () => {
-  self.skipWaiting();
+  void self.skipWaiting();
 });
 
 const CONTENT_TYPES: Record<string, string> = {
@@ -23,17 +23,19 @@ function contentType(url: string): string {
   return CONTENT_TYPES[url.substring(url.lastIndexOf('.') + 1)] || 'text/plain';
 }
 
-async function post(data: unknown) {
+async function post(data: unknown): Promise<void> {
   const clients = await self.clients.matchAll();
   const client = clients[0];
   client.postMessage(data);
 }
 
-const waitingFor: Map<string, (packet: ServiceWorkerPacket) => void> = new Map();
+const waitingFor = new Map<string, (packet: ServiceWorkerPacket) => void>();
 
 async function requestContents(path: string): Promise<Response> {
   let resolve!: (packet: ServiceWorkerPacket) => void;
-  const promise: Promise<ServiceWorkerPacket> = new Promise((res) => (resolve = res));
+  const promise = new Promise<ServiceWorkerPacket>((res) => {
+    resolve = res;
+  });
   await post(path);
 
   waitingFor.set(path, resolve);
@@ -54,7 +56,7 @@ async function requestContents(path: string): Promise<Response> {
 
 let validPaths: string[] | undefined;
 
-self.addEventListener('message', async (event) => {
+self.addEventListener('message', (event) => {
   if (Array.isArray(event.data)) {
     validPaths = event.data;
   } else {
@@ -65,10 +67,10 @@ self.addEventListener('message', async (event) => {
   }
 });
 
-self.addEventListener('fetch', async (event: FetchEvent) => {
+self.addEventListener('fetch', (event: FetchEvent) => {
   if (!validPaths) return;
 
-  const request = event.request;
+  const { request } = event;
   const path = new URL(request.url).pathname;
 
   if (
