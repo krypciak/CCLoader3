@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@types/archiver": "^6.0.3",
+    "@types/esbuild-copy-static-files": "^0.1.4",
     "@types/jquery": "^1.10.31",
     "@types/node": ">=24.0",
     "@types/semver": "6.2.x || 6.3.x",
@@ -27,8 +28,8 @@
     "ultimate-crosscode-typedefs": "github:CCDirectLink/ultimate-crosscode-typedefs"
   },
   "scripts": {
-    "build": "node build.mjs",
-    "watch": "node build.mjs watch",
+    "build": "node --experimental-strip-types build.ts",
+    "watch": "node --experimental-strip-types build.ts watch",
     "lint": "eslint . --ext .js,.ts --ignore-path .eslintignore",
     "check-fmt": "prettier --check '**/*.{js,ts,json,css,html}'",
     "format": "prettier --write **/*.{js,ts,json,css,html}"
