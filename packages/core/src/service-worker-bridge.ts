@@ -53,7 +53,7 @@ function setMessageHandling() {
   };
 }
 
-let validCCModPaths: string[] | undefined
+let validCCModPaths: string[] | undefined;
 export function isCCModPath(path: string): boolean {
   if (!validCCModPaths) return false;
 
