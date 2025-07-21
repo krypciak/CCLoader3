@@ -106,19 +106,24 @@ function ccmodServiceWorker(): esbuild.BuildOptions {
 
 const modules: (() => esbuild.BuildOptions)[] = [core, runtime, ccmodServiceWorker];
 
-if (isWatch) {
-  console.clear();
-  await Promise.all(
-    modules.map(async (module) => {
-      const ctx = await esbuild.context(module());
-      await ctx.watch();
-    }),
-  );
-} else {
-  await Promise.all(
-    modules.map(async (module) => {
-      await esbuild.build(module());
-    }),
-  );
-  process.exit(); // because esbuild keeps the process alive for some reason
+async function run() {
+  fs.promises.mkdir('./dist', { recursive: true });
+
+  if (isWatch) {
+    console.clear();
+    await Promise.all(
+      modules.map(async (module) => {
+        const ctx = await esbuild.context(module());
+        await ctx.watch();
+      }),
+    );
+  } else {
+    await Promise.all(
+      modules.map(async (module) => {
+        await esbuild.build(module());
+      }),
+    );
+    process.exit(); // because esbuild keeps the process alive for some reason
+  }
 }
+run();
