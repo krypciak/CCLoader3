@@ -25,6 +25,27 @@ function donePlugin(outfile: string, modifyCode?: (code: string) => string): esb
   };
 }
 
+const commonOptions = {
+  format: 'esm',
+  platform: 'node',
+
+  write: false,
+  bundle: true,
+  minify: false,
+  sourcemap: 'inline',
+} as const;
+
+function fixEsmImports(code: string): string {
+  code = code.replace(
+    /import \{ Buffer as (Buffer\d*) \} from "buffer";/g,
+    'const $1 = require("buffer").Buffer;',
+  );
+  code = code.replace(
+    /import \{ (createRequire) } from "module";/g,
+    'const $1 = require("module").createRequire;',
+  );
+  return code;
+}
 
 function core(): esbuild.BuildOptions {
   const outfile = path.join('./dist', `core.js`);
@@ -32,16 +53,13 @@ function core(): esbuild.BuildOptions {
   return {
     entryPoints: ['packages/core/src/main.ts'],
 
-    format: 'esm',
-    platform: 'node',
-
-    write: false,
-    bundle: true,
-    minify: false,
-    sourcemap: 'inline',
+    ...commonOptions,
 
     plugins: [
-      donePlugin(outfile),
+      donePlugin(outfile, (code) => {
+        code = fixEsmImports(code);
+        return code;
+      }),
     ],
   };
 }
@@ -52,13 +70,7 @@ function runtime(): esbuild.BuildOptions {
   return {
     entryPoints: ['packages/runtime/src/_main.ts'],
 
-    format: 'esm',
-    platform: 'node',
-
-    write: false,
-    bundle: true,
-    minify: true,
-    sourcemap: 'inline',
+    ...commonOptions,
 
     plugins: [
       copyStaticFiles({
@@ -73,12 +85,26 @@ function runtime(): esbuild.BuildOptions {
         src: `./packages/runtime/assets`,
         dest: `./dist/runtime/assets`,
       }),
-      donePlugin(outfile),
+      donePlugin(outfile, (code) => {
+        code = fixEsmImports(code);
+        return code;
+      }),
     ],
   };
 }
 
-const modules: (() => esbuild.BuildOptions)[] = [core, runtime];
+function ccmodServiceWorker(): esbuild.BuildOptions {
+  const outfile = path.join('./', 'ccmod-service-worker.js');
+  return {
+    entryPoints: ['packages/core/src/service-worker.ts'],
+
+    ...commonOptions,
+
+    plugins: [donePlugin(outfile)],
+  };
+}
+
+const modules: (() => esbuild.BuildOptions)[] = [core, runtime, ccmodServiceWorker];
 
 if (isWatch) {
   console.clear();

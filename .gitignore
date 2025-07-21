@@ -5,6 +5,7 @@ dist/
 *.tsbuildinfo
 
 /ultimate-crosscode-typedefs/
+/ccmod-service-worker.js
 
 ccloader_*_quick-install.*
 ccloader_*_package.*
