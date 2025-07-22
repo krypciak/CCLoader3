@@ -1,6 +1,6 @@
 import * as utils from './utils';
 
-const nodejsUtil = window.require('util') as typeof import('util');
+const nodejsUtil = window.require?.('util') as typeof import('util');
 
 export enum LogLevel {
   LOG = 2,

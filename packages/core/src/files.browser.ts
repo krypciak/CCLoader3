@@ -57,6 +57,7 @@ export async function getInstalledExtensions(config: Config): Promise<string[]> 
     if (utils.errorHasMessage(err)) {
       err.message = `Failed to send request to '${extensionsApiUrl}': ${err.message}`;
     }
-    throw err;
+    // throw err;
+    return []
   }
 }

@@ -3,8 +3,8 @@
 import * as impactModuleHooks from './impact-module-hooks';
 import * as resources from './resources';
 
-if (typeof require !== 'undefined') {
-  const pathsNative = require('path') as typeof import('path');
+if (typeof window.require !== 'undefined') {
+  const pathsNative = window.require('path') as typeof import('path');
 
   const GAME_ASSETS_FS_PATH = pathsNative.join(
     process.cwd(),
