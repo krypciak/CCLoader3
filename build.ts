@@ -5,15 +5,13 @@ import * as fs from 'fs';
 
 const isWatch = process.argv[2] === 'watch';
 
-function donePlugin(outfile: string, modifyCode?: (code: string) => string): esbuild.Plugin {
+function donePlugin(outfile: string): esbuild.Plugin {
   return {
     name: 'done plugin',
     setup(build) {
       build.onEnd(async (res) => {
         let code = res.outputFiles![0]?.text;
         if (!code) return; // when compile errors
-
-        if (modifyCode) code = modifyCode(code);
 
         await fs.promises.writeFile(outfile, code);
 
@@ -35,18 +33,6 @@ const commonOptions = {
   sourcemap: 'inline',
 } as const;
 
-function fixEsmImports(code: string): string {
-  code = code.replace(
-    /import \{ Buffer as (Buffer\d*) \} from "buffer";/g,
-    'const $1 = require("buffer").Buffer;',
-  );
-  code = code.replace(
-    /import \{ (createRequire) } from "module";/g,
-    'const $1 = require("module").createRequire;',
-  );
-  return code;
-}
-
 function core(): esbuild.BuildOptions {
   const outfile = path.join('./dist', `core.js`);
 
@@ -55,12 +41,7 @@ function core(): esbuild.BuildOptions {
 
     ...commonOptions,
 
-    plugins: [
-      donePlugin(outfile, (code) => {
-        code = fixEsmImports(code);
-        return code;
-      }),
-    ],
+    plugins: [donePlugin(outfile)],
   };
 }
 
@@ -85,10 +66,7 @@ function runtime(): esbuild.BuildOptions {
         src: `./packages/runtime/assets`,
         dest: `./dist/runtime/assets`,
       }),
-      donePlugin(outfile, (code) => {
-        code = fixEsmImports(code);
-        return code;
-      }),
+      donePlugin(outfile),
     ],
   };
 }
