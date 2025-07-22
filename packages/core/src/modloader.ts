@@ -10,7 +10,8 @@ import * as modDataStorage from './mod-data-storage';
 import { LegacyManifest, Manifest } from 'ultimate-crosscode-typedefs/file-types/mod-manifest';
 import { LoadingStage, ModID } from 'ultimate-crosscode-typedefs/modloader/mod';
 import * as consoleM from '@ccloader3/common/console';
-import { loadCCMods, loadServiceWorker } from './service-worker-bridge';
+import { loadServiceWorker } from './service-worker-bridge';
+import { loadCCMods } from './files.ccmod';
 
 type ModsMap = Map<ModID, Mod>;
 type ReadonlyModsMap = ReadonlyMap<ModID, Mod>;

@@ -1,9 +1,8 @@
-import { configure, fs } from '@zenfs/core';
-import { Zip } from '@zenfs/archives';
+import * as filesCCMod from './files.ccmod';
 
 export interface ServiceWorkerPacket {
   path: string;
-  data: Buffer;
+  data: Buffer | undefined;
 }
 
 export async function loadServiceWorker(): Promise<ServiceWorker> {
@@ -34,7 +33,7 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
   return controller;
 }
 
-function sendMessage(packet: unknown): void {
+export function sendServiceWorkerMessage(packet: unknown): void {
   const { controller } = window.navigator.serviceWorker;
   controller?.postMessage(packet);
 }
@@ -43,42 +42,12 @@ function setMessageHandling(): void {
   navigator.serviceWorker.onmessage = async (event) => {
     const path: string = event.data;
 
-    const data = await fs.promises.readFile(path);
+    const data = await filesCCMod.readFile(path);
 
     const packet: ServiceWorkerPacket = {
       path,
       data,
     };
-    sendMessage(packet);
+    sendServiceWorkerMessage(packet);
   };
-}
-
-let validCCModPaths: string[] | undefined;
-export function isCCModPath(path: string): boolean {
-  if (!validCCModPaths) return false;
-
-  if (!path.startsWith('/')) path = `/${path}`;
-  return validCCModPaths.some(
-    (pathPrefix) => path.length > pathPrefix.length && path.startsWith(pathPrefix),
-  );
-}
-
-export async function loadCCMods(
-  allModsList: Array<{ parentDir: string; dir: string }>,
-): Promise<void> {
-  const ccmods: typeof allModsList = allModsList.filter((mod) => mod.dir.endsWith('.ccmod'));
-  const ccmodArrayBuffers = await Promise.all(
-    ccmods.map(async (mod) => (await fetch(`../${mod.dir}`)).arrayBuffer()),
-  );
-
-  const mounts: Parameters<typeof configure>[0]['mounts'] = Object.fromEntries(
-    ccmods.map((mod, i) => [mod.dir, { backend: Zip, data: ccmodArrayBuffers[i] }]),
-  );
-
-  await configure({
-    mounts,
-  });
-
-  validCCModPaths = ccmods.map((mod) => `/${mod.dir}`);
-  sendMessage(validCCModPaths);
 }

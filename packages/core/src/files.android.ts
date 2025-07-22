@@ -1,7 +1,7 @@
 import * as filesBrowser from './files.browser';
 import { Config } from './config';
 
-export { isReadable, loadText } from './files.browser';
+export { isReadable, readFile, loadText } from './files.browser';
 
 export async function getModDirectoriesIn(dir: string, config: Config): Promise<string[]> {
   if (dir === `${config.gameAssetsDir}mods/`) {

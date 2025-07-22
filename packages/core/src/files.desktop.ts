@@ -1,34 +1,17 @@
 import * as utils from '@ccloader3/common/utils';
 import { Config } from './config';
 
-import { fs as zenFs } from '@zenfs/core';
-import { isCCModPath } from './service-worker-bridge';
 const fs: typeof import('fs') = window.require?.('fs');
 
-function preparePath(path: string): string {
-  if (isCCModPath(path)) {
-    if (!path.startsWith('/')) path = `/${path}`;
-  }
-  return path;
-}
-
-function getFs(path: string): typeof import('fs') | (typeof import('@zenfs/core'))['fs'] {
-  if (isCCModPath(path)) {
-    return zenFs;
-  } else {
-    return fs;
-  }
+export async function readFile(path: string): Promise<Buffer> {
+  return fs.promises.readFile(path);
 }
 
 export async function loadText(path: string): Promise<string> {
-  path = preparePath(path);
-  const fs = getFs(path);
   return fs.promises.readFile(path, 'utf8');
 }
 
 export async function isReadable(path: string): Promise<boolean> {
-  path = preparePath(path);
-  const fs = getFs(path);
   try {
     await fs.promises.access(path, fs.constants.R_OK);
     return true;
@@ -50,9 +33,6 @@ async function findRecursivelyInternal(
   relativePrefix: string,
   fileList: string[],
 ): Promise<void> {
-  currentDir = preparePath(currentDir);
-  const fs = getFs(currentDir);
-
   let contents: string[];
   try {
     contents = await fs.promises.readdir(currentDir);
@@ -75,9 +55,6 @@ async function findRecursivelyInternal(
 }
 
 export async function getModDirectoriesIn(dir: string, _config: Config): Promise<string[]> {
-  dir = preparePath(dir);
-  const fs = getFs(dir);
-
   if (dir.endsWith('/')) dir = dir.slice(0, -1);
 
   let allContents: string[];

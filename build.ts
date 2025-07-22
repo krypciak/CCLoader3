@@ -10,7 +10,7 @@ function donePlugin(outfile: string, modifyCode?: (code: string) => string): esb
     name: 'done plugin',
     setup(build) {
       build.onEnd(async (res) => {
-        let code = res.outputFiles![0].text;
+        let code = res.outputFiles![0]?.text;
         if (!code) return; // when compile errors
 
         if (modifyCode) code = modifyCode(code);
