@@ -1,10 +1,3 @@
-import * as filesCCMod from './files.ccmod';
-
-export interface ServiceWorkerPacket {
-  path: string;
-  data: Buffer | undefined;
-}
-
 export async function loadServiceWorker(): Promise<ServiceWorker> {
   const currentRegistration = await window.navigator.serviceWorker.getRegistration();
   if (currentRegistration) {
@@ -33,16 +26,37 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
   return controller;
 }
 
-export function sendServiceWorkerMessage(packet: unknown): void {
+function sendServiceWorkerMessage(packet: unknown): void {
   const { controller } = window.navigator.serviceWorker;
   controller?.postMessage(packet);
+}
+
+export type FetchHandler = (path: string) => Promise<ArrayBuffer | null>;
+const fetchHandlers: FetchHandler[] = [];
+const validPathPrefixes: string[] = [];
+
+export function addFetchHandler(pathPrefixes: string[], handler: FetchHandler): void {
+  fetchHandlers.push(handler);
+  validPathPrefixes.push(...pathPrefixes);
+
+  sendServiceWorkerMessage(validPathPrefixes.map((path) => `/${path}`));
+}
+
+export interface ServiceWorkerPacket {
+  path: string;
+  data: ArrayBuffer;
 }
 
 function setMessageHandling(): void {
   navigator.serviceWorker.onmessage = async (event) => {
     const path: string = event.data;
 
-    const data = await filesCCMod.readFile(path);
+    let data: ArrayBuffer | null = null;
+    for (const handler of fetchHandlers) {
+      data = await handler(path);
+      if (data) break;
+    }
+    if (!data) throw new Error(`path: "${path}" was not handled!`);
 
     const packet: ServiceWorkerPacket = {
       path,

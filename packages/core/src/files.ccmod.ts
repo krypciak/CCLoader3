@@ -1,5 +1,5 @@
 import { type Unzipped, unzipSync } from 'fflate/browser';
-import { sendServiceWorkerMessage } from './service-worker-bridge';
+import { addFetchHandler } from './service-worker-bridge';
 
 const files = new Map<string, Unzipped>();
 
@@ -71,5 +71,8 @@ export async function loadCCMods(
     files.set(mod.dir, buf);
   }
 
-  sendServiceWorkerMessage(ccmods.map((mod) => `/${mod.dir}`));
+  addFetchHandler(
+    ccmods.map((mod) => mod.dir),
+    readFile,
+  );
 }

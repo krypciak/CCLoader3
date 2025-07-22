@@ -41,24 +41,22 @@ async function requestContents(path: string): Promise<Response> {
   waitingFor.set(path, resolve);
 
   const { data } = await promise;
-  if (!data) {
-    return fetch(path);
-  } else {
-    return new Response(data, {
-      headers: {
-        'Content-Type': contentType(path),
-      },
-      status: 200,
-      statusText: 'ok',
-    });
-  }
+  if (!data) throw new Error('not possible');
+
+  return new Response(data, {
+    headers: {
+      'Content-Type': contentType(path),
+    },
+    status: 200,
+    statusText: 'ok',
+  });
 }
 
-let validPaths: string[] | undefined;
+let validPathPrefixes: string[] | undefined;
 
 self.addEventListener('message', (event) => {
   if (Array.isArray(event.data)) {
-    validPaths = event.data;
+    validPathPrefixes = event.data;
   } else {
     const packet: ServiceWorkerPacket = event.data;
     const resolve = waitingFor.get(packet.path)!;
@@ -68,13 +66,15 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('fetch', (event: FetchEvent) => {
-  if (!validPaths) return;
+  if (!validPathPrefixes) return;
 
   const { request } = event;
   const path = new URL(request.url).pathname;
 
   if (
-    validPaths.some((pathPrefix) => path.length > pathPrefix.length && path.startsWith(pathPrefix))
+    validPathPrefixes.some(
+      (pathPrefix) => path.length > pathPrefix.length && path.startsWith(pathPrefix),
+    )
   ) {
     event.respondWith(requestContents(path));
   }
