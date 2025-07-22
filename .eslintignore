@@ -2,4 +2,4 @@
 dist/
 packages/common/src/vendor-libs
 ultimate-crosscode-typedefs/
-ccmod-service-worker.js
+dist-ccmod-service-worker.js

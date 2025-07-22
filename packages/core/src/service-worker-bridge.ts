@@ -12,7 +12,7 @@ export async function loadServiceWorker(): Promise<ServiceWorker> {
     //Do not await update since the worker only performs a simple task. Even if there is a bugfix it should be enough to not crash.
     void currentRegistration.update();
   } else {
-    const path = 'ccmod-service-worker.js';
+    const path = 'dist-ccmod-service-worker.js';
     await window.navigator.serviceWorker.register(path, {
       updateViaCache: 'none',
       type: 'module',

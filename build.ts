@@ -94,7 +94,7 @@ function runtime(): esbuild.BuildOptions {
 }
 
 function ccmodServiceWorker(): esbuild.BuildOptions {
-  const outfile = path.join('./', 'ccmod-service-worker.js');
+  const outfile = path.join('./', 'dist-ccmod-service-worker.js');
   return {
     entryPoints: ['packages/core/src/service-worker.ts'],
 
