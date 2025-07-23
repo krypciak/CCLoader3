@@ -73,7 +73,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
   }
 
   const { request } = event;
-  const path = new URL(request.url).pathname;
+  const path = decodeURI(new URL(request.url).pathname);
 
   if (
     validPathPrefixes.some(
