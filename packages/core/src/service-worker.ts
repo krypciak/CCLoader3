@@ -41,7 +41,9 @@ async function requestContents(path: string): Promise<Response> {
   waitingFor.set(path, resolve);
 
   const { data } = await promise;
-  if (!data) throw new Error('not possible');
+  if (!data) {
+    return new Response(null, { status: 404 });
+  }
 
   return new Response(data, {
     headers: {
@@ -66,7 +68,9 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('fetch', (event: FetchEvent) => {
-  if (!validPathPrefixes) return;
+  if (!validPathPrefixes) {
+    return;
+  }
 
   const { request } = event;
   const path = new URL(request.url).pathname;

@@ -1,11 +1,12 @@
 import { type Unzipped, unzipSync } from 'fflate/browser';
 import { addFetchHandler } from './service-worker-bridge';
+import * as files from './files';
 
-const files = new Map<string, Unzipped>();
+const fileMap = new Map<string, Unzipped>();
 
 function findPrefix(path: string): [string, string] | null {
   if (path.startsWith('/')) path = path.substring(1);
-  const prefix = [...files.keys()].find((dir) => path.startsWith(dir));
+  const prefix = [...fileMap.keys()].find((dir) => path.startsWith(dir));
 
   if (!prefix) return null;
 
@@ -31,7 +32,7 @@ export async function readFile(path: string): Promise<ArrayBuffer | null> {
   if (!prefixObj) return null;
   const [relativePath, prefix] = prefixObj;
 
-  const unzipped = files.get(prefix)!;
+  const unzipped = fileMap.get(prefix)!;
 
   const data = unzipped[relativePath];
 
@@ -44,7 +45,7 @@ export async function findRecursively(dir: string): Promise<string[] | null> {
   if (!prefixObj) return null;
   const [relativePath, prefix] = prefixObj;
 
-  const unzipped = files.get(prefix)!;
+  const unzipped = fileMap.get(prefix)!;
 
   const dirs = Object.keys(unzipped)
     .filter((path) => !path.endsWith('/') && path.startsWith(relativePath))
@@ -58,7 +59,10 @@ export async function loadCCMods(
 ): Promise<void> {
   const ccmods: typeof allModsList = allModsList.filter((mod) => mod.dir.endsWith('.ccmod'));
   const ccmodArrayBuffers = await Promise.all(
-    ccmods.map(async (mod) => (await fetch(`../${mod.dir}`)).bytes()),
+    ccmods.map(async (mod) => {
+      const url = `./${mod.dir}`;
+      return new Uint8Array(await files.readFile(url));
+    }),
   );
 
   // console.time('uncompress');
@@ -68,7 +72,7 @@ export async function loadCCMods(
   for (let i = 0; i < ccmods.length; i++) {
     const mod = ccmods[i];
     const buf = uncompressed[i];
-    files.set(mod.dir, buf);
+    fileMap.set(mod.dir, buf);
   }
 
   addFetchHandler(
