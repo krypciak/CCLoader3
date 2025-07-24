@@ -104,7 +104,7 @@ impactModuleHooks.add('impact.base.image', () => {
       // assuming that there are no such JSON paths because JQuery automatically
       // encodes URIs before requesting and there are no instances of leading
       // whitespace because `ig.root` is not empty in the development version.
-      path = path.trimRight();
+      path = path.trimEnd();
       // NOTE: Strictly speaking, Impact's file forwarding must be applied
       // first, before trimming, as in the game, but I'm not sure if this will
       // break anything because the current behavior certainly haven't so far,

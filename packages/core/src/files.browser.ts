@@ -2,17 +2,25 @@ import * as utils from '@ccloader3/common/utils';
 import * as paths from '@ccloader3/common/paths';
 import { Config } from './config';
 
-export async function loadText(path: string): Promise<string> {
+async function request(path: string): Promise<Response> {
   try {
     let res = await fetch(utils.cwdFilePathToURL(path).href);
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    return await res.text();
+    return res;
   } catch (err) {
     if (utils.errorHasMessage(err)) {
       err.message = `Failed to load file '${path}': ${err.message}`;
     }
     throw err;
   }
+}
+
+export async function readFile(path: string): Promise<ArrayBuffer> {
+  return (await request(path)).arrayBuffer();
+}
+
+export async function loadText(path: string): Promise<string> {
+  return (await request(path)).text();
 }
 
 export async function isReadable(path: string): Promise<boolean> {
@@ -57,6 +65,7 @@ export async function getInstalledExtensions(config: Config): Promise<string[]> 
     if (utils.errorHasMessage(err)) {
       err.message = `Failed to send request to '${extensionsApiUrl}': ${err.message}`;
     }
-    throw err;
+    // throw err;
+    return [];
   }
 }

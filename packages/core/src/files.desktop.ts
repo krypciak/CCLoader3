@@ -1,16 +1,19 @@
 import * as utils from '@ccloader3/common/utils';
 import { Config } from './config';
 
-const fs = (window.require('fs') as typeof import('fs')).promises;
-const fsconst = (window.require('fs') as typeof import('fs')).constants;
+const fs: typeof import('fs') = window.require?.('fs');
+
+export async function readFile(path: string): Promise<Buffer> {
+  return fs.promises.readFile(path);
+}
 
 export async function loadText(path: string): Promise<string> {
-  return fs.readFile(path, 'utf8');
+  return fs.promises.readFile(path, 'utf8');
 }
 
 export async function isReadable(path: string): Promise<boolean> {
   try {
-    await fs.access(path, fsconst.R_OK);
+    await fs.promises.access(path, fs.constants.R_OK);
     return true;
   } catch (_err) {
     return false;
@@ -32,7 +35,7 @@ async function findRecursivelyInternal(
 ): Promise<void> {
   let contents: string[];
   try {
-    contents = await fs.readdir(currentDir);
+    contents = await fs.promises.readdir(currentDir);
   } catch (err) {
     if (utils.errorHasCode(err) && err.code === 'ENOENT') return;
     throw err;
@@ -41,7 +44,7 @@ async function findRecursivelyInternal(
   await Promise.all(
     contents.map(async (name) => {
       let fullPath = `${currentDir}/${name}`;
-      let stat = await fs.stat(fullPath);
+      let stat = await fs.promises.stat(fullPath);
       if (stat.isDirectory()) {
         await findRecursivelyInternal(fullPath, `${relativePrefix}${name}/`, fileList);
       } else {
@@ -56,11 +59,11 @@ export async function getModDirectoriesIn(dir: string, _config: Config): Promise
 
   let allContents: string[];
   try {
-    allContents = await fs.readdir(dir);
+    allContents = await fs.promises.readdir(dir);
   } catch (err) {
     if (utils.errorHasCode(err) && err.code === 'ENOENT') {
-      await fs.mkdir(dir);
-      allContents = await fs.readdir(dir);
+      await fs.promises.mkdir(dir);
+      allContents = await fs.promises.readdir(dir);
     }
     throw err;
   }
@@ -71,8 +74,9 @@ export async function getModDirectoriesIn(dir: string, _config: Config): Promise
       let fullPath = `${dir}/${name}`;
       // the `withFileTypes` option of `readdir` can't be used here because it
       // doesn't dereference symbolic links similarly to `stat`
-      let stat = await fs.stat(fullPath);
-      if (stat.isDirectory()) modDirectories.push(fullPath);
+      let stat = await fs.promises.stat(fullPath);
+      if (stat.isDirectory() || (stat.isFile() && name.endsWith('.ccmod')))
+        modDirectories.push(fullPath);
     }),
   );
   return modDirectories;
@@ -86,7 +90,7 @@ export async function getInstalledExtensions(config: Config): Promise<string[]> 
 
   let allContents: string[];
   try {
-    allContents = await fs.readdir(extensionsDir);
+    allContents = await fs.promises.readdir(extensionsDir);
   } catch (err) {
     // Older versions of the game simply don't have the support for extensions.
     if (utils.errorHasCode(err) && err.code === 'ENOENT') return [];
@@ -114,7 +118,7 @@ export async function getInstalledExtensions(config: Config): Promise<string[]> 
       try {
         // The game also checks if the containing directory exists before
         // checking if there is a file inside, but it is redundant.
-        await fs.access(`${extensionsDir}/${name}/${name}.json`);
+        await fs.promises.access(`${extensionsDir}/${name}/${name}.json`);
       } catch (_err) {
         return;
       }

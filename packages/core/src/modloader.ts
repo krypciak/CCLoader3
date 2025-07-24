@@ -10,12 +10,16 @@ import * as modDataStorage from './mod-data-storage';
 import { LegacyManifest, Manifest } from 'ultimate-crosscode-typedefs/file-types/mod-manifest';
 import { LoadingStage, ModID } from 'ultimate-crosscode-typedefs/modloader/mod';
 import * as consoleM from '@ccloader3/common/console';
+import { loadServiceWorker } from './service-worker-bridge';
+import { loadCCMods } from './files.ccmod';
 
 type ModsMap = Map<ModID, Mod>;
 type ReadonlyModsMap = ReadonlyMap<ModID, Mod>;
 
 export async function boot(): Promise<void> {
   consoleM.inject();
+
+  const serviceWorker = await loadServiceWorker();
 
   let modloaderMetadata = await loadModloaderMetadata();
   console.log(`CCLoader ${modloaderMetadata.version}`);
@@ -57,7 +61,7 @@ export async function boot(): Promise<void> {
     .set('crosscode', gameVersion)
     .set('ccloader', modloaderMetadata.version);
   if (typeof process !== 'undefined') {
-    virtualPackages.set('nw', new semver.SemVer(process.versions.nw));
+    virtualPackages.set('nw', new semver.SemVer(process.versions.nw!));
   }
 
   let installedExtensions = new Map<ModID, semver.SemVer>();
@@ -137,6 +141,7 @@ export async function boot(): Promise<void> {
     modDataStorage: modDataStorage.namespace,
     Mod: {},
     _runtimeMod: runtimeMod,
+    serviceWorker,
   } as typeof modloader;
 
   console.log('beginning the game boot sequence...');
@@ -206,6 +211,8 @@ async function loadAllModMetadata(config: configM.Config, installedMods: ModsMap
       allModsList.push({ parentDir: dir, dir: subdir });
     }
   }
+
+  await loadCCMods(allModsList);
 
   let modsCountPerDir = new Map<string, number>();
   await Promise.all(

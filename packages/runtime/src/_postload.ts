@@ -1,4 +1,5 @@
 import './font';
+import './font-race-condition-fix';
 import './options';
 import './input';
 

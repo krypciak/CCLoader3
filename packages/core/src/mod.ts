@@ -1,7 +1,7 @@
 import semver from '@ccloader3/common/vendor-libs/semver';
 import * as paths from '@ccloader3/common/paths';
 import * as utils from '@ccloader3/common/utils';
-import * as filesDesktop from './files.desktop';
+import * as files from './files';
 import { Manifest } from 'ultimate-crosscode-typedefs/file-types/mod-manifest';
 import {
   Dependency,
@@ -77,8 +77,8 @@ export class Mod implements ModPublic {
     let assets: string[] = [];
     if (this.manifest.assets != null) {
       assets = this.manifest.assets.map((path) => paths.jailRelative(path));
-    } else if (utils.PLATFORM_TYPE === utils.PlatformType.DESKTOP) {
-      assets = await filesDesktop.findRecursively(this.assetsDirectory);
+    } else {
+      assets = (await files.findRecursively(this.assetsDirectory)) ?? [];
     }
     this.assets = new Set(assets);
   }

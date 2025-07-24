@@ -157,7 +157,8 @@ export async function loadImage(
   }
 
   if (shouldFetchRealData) {
-    data = await resourcesPlain.loadImage(wrapPathIntoURL(resolvedPath).href);
+    const url = `/${resolvedPath}`;
+    data = await resourcesPlain.loadImage(url);
   }
 
   if (requestedAsset != null) {

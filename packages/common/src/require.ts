@@ -5,8 +5,8 @@ import * as utils from './utils';
 
 let requireFixed: NodeRequire = null!;
 
-if (typeof require === 'function') {
-  const paths = require('path') as typeof import('path');
+if (typeof window.require === 'function') {
+  const paths = window.require('path') as typeof import('path');
 
   requireFixed = ((id) => {
     try {
