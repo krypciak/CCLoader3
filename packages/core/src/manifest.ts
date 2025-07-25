@@ -71,6 +71,16 @@ function jsonPathToString(path: JsonPath): string {
   return str;
 }
 
+/* see https://github.com/CCDirectLink/CCLoader3/issues/18 for details */
+const ccmodIdValidationExceptions: string[] = [
+  'CrossCode Map Editor',
+  "Azure's Adjustments",
+  'Boki Colors',
+  'CCLoader display version',
+  'CrossCode C Edition',
+  'New game++',
+];
+
 /* eslint-disable no-undefined */
 
 export class Validator {
@@ -81,7 +91,7 @@ export class Validator {
 
     if (this.assertType([], data, [Type.object]).status === 'ok') {
       if (this.assertType(['id'], data.id, [Type.string]).status === 'ok') {
-        if (!/^[a-zA-Z0-9_-]+$/.test(data.id)) {
+        if (!/^[a-zA-Z0-9_-]+$/.test(data.id) || ccmodIdValidationExceptions.includes(data.id)) {
           this.problems.push(
             'id must consist only of one or more alphanumberic characters, hyphens or underscores',
           );
