@@ -91,7 +91,7 @@ export class Validator {
 
     if (this.assertType([], data, [Type.object]).status === 'ok') {
       if (this.assertType(['id'], data.id, [Type.string]).status === 'ok') {
-        if (!/^[a-zA-Z0-9_-]+$/.test(data.id) || ccmodIdValidationExceptions.includes(data.id)) {
+        if (!/^[a-zA-Z0-9_-]+$/.test(data.id) && !ccmodIdValidationExceptions.includes(data.id)) {
           this.problems.push(
             'id must consist only of one or more alphanumberic characters, hyphens or underscores',
           );
