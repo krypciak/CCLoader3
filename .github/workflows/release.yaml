@@ -29,6 +29,29 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Fetch CCModManager URL
+        id: url
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            const { writeFile } = await import('node:fs/promises');
+            const { Readable } = await import('node:stream');
+
+            const { data } = await github.request('GET /repos/{owner}/{repo}/releases/latest', {
+              owner: 'CCDirectLink',
+              repo: 'CCModManager'
+            });
+            const asset = data?.assets?.[0];
+            if (!asset) {
+              console.error(data);
+              throw new Error('Something went horribly wrong fetching the release asset.');
+            }
+            return asset.browser_download_url;
+
+      - name: Download CCModManager
+        run: wget -O "${{ github.workspace }}/ccmodmanager.ccmod" "${{ steps.url.outputs.result }}"
+
       - name: Create the distributables
         run: node scripts/make-dist-archives.js
 
