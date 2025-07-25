@@ -94,7 +94,7 @@ export class Validator {
       this.assertLocalizedString(['description'], data.description, true);
       this.assertType(['license'], data.license, [Type.string], true);
       this.assertLocalizedString(['homepage'], data.homepage, true);
-      this.assertKeywords(['keywords'], data.keywords);
+      this.assertKeywords(['tags'], data.tags);
       this.assertModIcons(['icons'], data.icons);
 
       this.assertPeople(['authors'], data.authors);
@@ -204,13 +204,16 @@ export class Validator {
     }
   }
 
-  private assertPeople(valuePath: JsonPath, value: Person[] | undefined): void {
+  private assertPeople(valuePath: JsonPath, value: Person | Person[] | undefined): void {
     let assertion = this.assertType(valuePath, value, [Type.array, Type.string], true);
     if (assertion.status !== 'ok') return;
     value = value!;
 
-    for (let index = 0; index < value.length; index++) {
-      let value2 = value[index];
+    if (assertion.type === Type.string) return;
+
+    const people = value as Person[]; // safely assert
+    for (let index = 0; index < people.length; index++) {
+      let value2 = people[index];
       this.assertPerson([...valuePath, index], value2);
     }
   }
