@@ -65,13 +65,13 @@ importers:
         version: 5.8.3
       ultimate-crosscode-typedefs:
         specifier: github:CCDirectLink/ultimate-crosscode-typedefs
-        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2
+        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4
 
   packages/common:
     dependencies:
       ultimate-crosscode-typedefs:
         specifier: github:CCDirectLink/ultimate-crosscode-typedefs
-        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2
+        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4
 
   packages/core:
     dependencies:
@@ -86,7 +86,7 @@ importers:
         version: 0.8.2
       ultimate-crosscode-typedefs:
         specifier: github:CCDirectLink/ultimate-crosscode-typedefs
-        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2
+        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4
     devDependencies:
       '@types/serviceworker':
         specifier: ^0.0.145
@@ -102,7 +102,7 @@ importers:
         version: link:../core
       ultimate-crosscode-typedefs:
         specifier: github:CCDirectLink/ultimate-crosscode-typedefs
-        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2
+        version: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4
 
 packages:
 
@@ -1068,8 +1068,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  ultimate-crosscode-typedefs@https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2:
-    resolution: {tarball: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2}
+  ultimate-crosscode-typedefs@https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4:
+    resolution: {tarball: https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4}
     version: 0.0.1
     engines: {node: '>=10.0.0'}
 
@@ -2043,7 +2043,7 @@ snapshots:
 
   typescript@5.8.3: {}
 
-  ultimate-crosscode-typedefs@https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/e460a5c9d93a9cdb0d2b915605a4ca283c8b91a2:
+  ultimate-crosscode-typedefs@https://codeload.github.com/CCDirectLink/ultimate-crosscode-typedefs/tar.gz/822b39dc49ffff6163c2ae9ad3545af8c967e4a4:
     dependencies:
       '@types/jquery': 1.10.45
       '@types/node': 24.0.15

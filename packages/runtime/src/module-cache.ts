@@ -1,12 +1,4 @@
 import * as impactInitHooks from './impact-init-hooks';
-// TODO: PR to UCCTD
-declare global {
-  namespace ccmod.moduleCache {
-    const prefixes: Map<string, string>;
-
-    function registerModPrefix(prefix: string, path: string): void;
-  }
-}
 
 let oldLoadScript: typeof ig._loadScript | undefined;
 export const prefixes = new Map<string, string>();
@@ -18,7 +10,7 @@ function registerModPrefix(prefix: string, path: string): void {
 impactInitHooks.add(() => {
   oldLoadScript = ig._loadScript;
 
-  function _loadScript(moduleName: string, requirer?: string | null): void {
+  function _loadScript(moduleName: string, requirer?: string): void {
     if (moduleName.includes('.')) {
       const root = moduleName.split('.')[0];
       let path = prefixes.get(root);
