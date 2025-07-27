@@ -16,15 +16,15 @@ ig.module('ccloader-runtime.stdlib.missing-option-fix')
     // should this ever occur.
     sc.OptionModel.inject({
       onStorageGlobalLoad(globals) {
-        this.parent(globals)
+        this.parent(globals);
 
         for (const key in sc.OPTIONS_DEFINITION) {
-          const option = sc.OPTIONS_DEFINITION[key]
-          if (option.type !== 'BUTTON_GROUP') continue
+          const option = sc.OPTIONS_DEFINITION[key];
+          if (option.type !== 'BUTTON_GROUP') continue;
 
-          const currentValue = this.get(key) as number
+          const currentValue = this.get(key) as number;
           if (!Object.values(option.data).includes(currentValue)) {
-            this.set(key, option.init)
+            this.set(key, option.init);
           }
         }
 
@@ -32,5 +32,5 @@ ig.module('ccloader-runtime.stdlib.missing-option-fix')
           this.persistOptions();
         }
       },
-    })
-  })
+    });
+  });

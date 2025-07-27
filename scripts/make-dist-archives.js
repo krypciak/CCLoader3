@@ -151,7 +151,10 @@ async function main() {
             fullscreen: false,
           },
         };
-        const packageJsonText = Buffer.from(`${JSON.stringify(packageJsonData, null, 2)}\n`, 'utf8');
+        const packageJsonText = Buffer.from(
+          `${JSON.stringify(packageJsonData, null, 2)}\n`,
+          'utf8',
+        );
         await archiveAdd(archive, { name: 'package.json' }, packageJsonText);
         await archiveAdd(archive, { name: 'assets/' });
         await archiveAdd(archive, { name: 'assets/mods/' });
@@ -159,7 +162,7 @@ async function main() {
         await archiveAddModloaderFiles(archive, modloaderDirName);
 
         if (fs.existsSync('ccmodmanager.ccmod')) {
-          const ccModManager = fs.readFileSync('ccmodmanager.ccmod')
+          const ccModManager = fs.readFileSync('ccmodmanager.ccmod');
           await archiveAdd(archive, { name: 'assets/mods/ccmodmanager.ccmod' }, ccModManager);
         }
       },
