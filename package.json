@@ -4,7 +4,6 @@
     "node": ">=23.0.0"
   },
   "dependencies": {
-    "jszip": "=3.10.1",
     "semver": "=6.3.0",
     "strip-json-comments": "^5.0.2"
   },

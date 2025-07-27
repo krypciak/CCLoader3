@@ -9,11 +9,6 @@ declare module '@ccloader3/common/vendor-libs/semver' {
   export default semver;
 }
 
-declare module '@ccloader3/common/vendor-libs/jszip' {
-  import * as JSZip from 'jszip/index';
-  export default JSZip;
-}
-
 declare module '@ccloader3/common/vendor-libs/strip-json-comments' {
   import stripJsonComments from 'strip-json-comments/index';
   export default stripJsonComments;
