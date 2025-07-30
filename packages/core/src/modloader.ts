@@ -56,7 +56,8 @@ export async function boot(): Promise<void> {
 
   let virtualPackages = new Map<ModID, semver.SemVer>()
     .set('crosscode', gameVersion)
-    .set('ccloader', modloaderMetadata.version);
+    .set('ccloader', modloaderMetadata.version)
+    .set('Simplify', new semver.SemVer('2.14.2'));
   if (typeof process !== 'undefined') {
     virtualPackages.set('nw', new semver.SemVer(process.versions.nw!));
   }
@@ -177,6 +178,9 @@ export async function boot(): Promise<void> {
   let activeDelegateFn = await game.getDelegateActivationFunction();
   console.log("stage 'poststart' reached!");
   await executeStage(loadedMods, 'poststart');
+
+  // NOTE: LEGACY CCLOADER2 EVENT
+  document.body.dispatchEvent(new Event('modsLoaded', { bubbles: true }));
 
   activeDelegateFn();
   console.log('crosscode with mods is now fully loaded!');
@@ -304,6 +308,20 @@ async function loadModMetadata(baseDirectory: string): Promise<Mod | null> {
     } else {
       manifestData = manifestData as Manifest;
       manifestValidator.validate(manifestData);
+
+      // NOTE: During the migration period of legacy mods to the new format,
+      // their `package.json`s were converted to `ccmod.json`. The problem is
+      // that apparently nobody involved in this process (even the ones who
+      // implemented this detail) didn't remember that in the new format, paths
+      // are assumed to be within `assets/`. So, what happened? The `assets`
+      // array from `package.json` was copied 1:1 to `ccmod.json`, meaning that
+      // there are now `ccmod.json`s with paths in `assets` that start with
+      // `assets/`. This is resolved exclusively for legacy manifests
+      // (obviously) by the `convertFromLegacy` call in the `if` block above,
+      // but not for `ccmod.json`s that were incorrectly migrated. Instead of
+      // going through the hassle of getting those mods updated *again*, I'll
+      // just fix it once and for all.
+      manifestData.assets = manifestData.assets?.map((e) => e.replace(/^assets\//, ''));
     }
   } catch (err) {
     if (utils.errorHasMessage(err)) {
