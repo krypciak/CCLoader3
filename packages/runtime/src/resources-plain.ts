@@ -19,7 +19,7 @@ export async function loadText(url: string): Promise<string> {
 export async function loadJSON<T = unknown>(url: string): Promise<T> {
   let text = await loadText(url);
   try {
-    return JSON.parse(stripJsonComments(text));
+    return JSON.parse(stripJsonComments(text, { trailingCommas: true }));
   } catch (err) {
     if (utils.errorHasMessage(err)) {
       err.message = `Failed to parse JSON file '${url}': ${err.message}`;
