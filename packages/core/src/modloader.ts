@@ -57,7 +57,11 @@ export async function boot(): Promise<void> {
   let virtualPackages = new Map<ModID, semver.SemVer>()
     .set('crosscode', gameVersion)
     .set('ccloader', modloaderMetadata.version)
-    .set('Simplify', new semver.SemVer('2.14.2'));
+    // These are legacy mods that are now integrated with the modloader
+    .set('Simplify', new semver.SemVer('2.14.2'))
+    .set('input-api', new semver.SemVer('1.0.2'))
+    .set('extension-asset-preloader', new semver.SemVer('1.0.0'))
+    .set('nax-module-cache', new semver.SemVer('1.0.2'));
   if (typeof process !== 'undefined') {
     virtualPackages.set('nw', new semver.SemVer(process.versions.nw!));
   }
