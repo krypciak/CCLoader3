@@ -67,8 +67,8 @@ ig.module('ccloader-runtime.stdlib.input')
     // Unfortunately it is not clear to me what did control forget there. The
     // jetpack mod made use of it since the beginning of time, so I remove it
     // from the blacklist here.
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    delete sc.KEY_BLACK_LIST[ig.KEY.CTRL];
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete, @typescript-eslint/no-unnecessary-type-assertion
+    delete (sc.KEY_BLACK_LIST as Partial<typeof sc.KEY_BLACK_LIST>)[ig.KEY.CTRL];
 
     sc.KeyBinder.inject({
       // the loop which populates `KEY_OPTION_MAP` was moved directly here
@@ -79,7 +79,7 @@ ig.module('ccloader-runtime.stdlib.input')
             continue;
           }
 
-          let action = optionId.slice(5);
+          let action = optionId.slice(5) as ig.Input.KnownAction;
           let { key1, key2 } = sc.options.values[optionId] as sc.OptionDefinition.CONTROLS['init'];
           if (key1 != null) {
             ig.input.bind(key1, action);
@@ -110,7 +110,7 @@ ig.module('ccloader-runtime.stdlib.input')
           return;
         }
 
-        let action = optionId.slice(5);
+        let action = optionId.slice(5) as ig.Input.KnownAction;
         let conflictingAction = ig.input.bindings[key];
 
         ig.input.bind(key, action);
