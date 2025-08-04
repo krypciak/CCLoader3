@@ -76,18 +76,21 @@ Object.assign(window, {
   simplify,
   Plugin,
   semver,
-
-  versions: Array.from(modloader.installedMods.values()).reduce<Record<string, string>>(
-    (acc, mod) => {
+  versions: [
+    ...Array.from(modloader.installedMods.values()).flatMap((mod) => {
       if (!mod.version) {
-        console.debug('Mod without a version detected in construction of window.versions');
-        return acc;
+        console.debug(
+          `${mod.id} was found to have no version defined during construction of window.versions`,
+        );
+        return [];
       }
-      acc[mod.id] = mod.version.toString();
-      return acc;
-    },
-    {},
-  ),
+      return [[mod.id, mod.version.toString()] as const];
+    }),
+    ...Array.from(modloader.virtualPackages).map(([id, ver]) => [id, ver.toString()] as const),
+  ].reduce<Record<string, string>>((acc, [id, ver]) => {
+    acc[id] = ver;
+    return acc;
+  }, {}),
   activeMods: [...modloader.loadedMods.values()],
   inactiveMods: [...modloader.installedMods.values()].filter(
     (mod) => !modloader.modDataStorage.isModEnabled(mod.id),
