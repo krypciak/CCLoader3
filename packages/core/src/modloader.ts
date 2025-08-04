@@ -140,6 +140,9 @@ export async function boot(): Promise<void> {
     installedMods,
     config,
     loadedMods,
+    virtualPackages: new Map(
+      [...virtualPackages].filter(([k]) => k !== 'crosscode' && k !== 'ccloader' && k !== 'nw'),
+    ),
     modDataStorage: modDataStorage.namespace,
     Mod: {},
     _runtimeMod: runtimeMod,
