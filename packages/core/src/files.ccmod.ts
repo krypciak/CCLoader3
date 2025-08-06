@@ -62,6 +62,8 @@ export async function loadCCMods(ccmods: string[]): Promise<void> {
     }),
   );
 
+  // from my limited testing unzipSync is about 50ms faster (unzipSync takes 150ms)
+  // compared to asynchronous unzip ¯\_(ツ)_/¯
   // console.time('uncompress');
   const uncompressed = ccmodArrayBuffers.map((buf) => unzipSync(buf));
   // console.timeEnd('uncompress');
