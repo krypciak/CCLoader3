@@ -25,19 +25,21 @@ function contentType(url: string): string {
 
 const cacheName = 'ccmod-service-worker-cache';
 
-function getRequestFromKey(key: string): Request {
-  return new Request(`http://${key}`);
+function getCacheKey(key: string): string {
+  return `https://${key}`;
 }
 
 async function storeInCache<T extends object>(key: string, value: T): Promise<void> {
   const cache = await caches.open(cacheName);
-  const response = new Response(JSON.stringify(value));
-  await cache.put(getRequestFromKey(key), response);
+  const response = new Response(JSON.stringify(value), {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  await cache.put(getCacheKey(key), response);
 }
 
 async function getFromCache<T extends object>(key: string): Promise<T | null> {
   const cache = await caches.open(cacheName);
-  const response = await cache.match(getRequestFromKey(key));
+  const response = await cache.match(getCacheKey(key));
   if (!response) return null;
   return await response.json();
 }
@@ -68,6 +70,7 @@ self.addEventListener('message', (event) => {
 
   if (packet.type === 'ValidPathPrefixes') {
     validPathPrefixes = packet.validPathPrefixes;
+
     void storeInCache(validPathPrefixesCacheKey, validPathPrefixes);
   } else {
     waitingFor.get(packet.path)?.(packet);
